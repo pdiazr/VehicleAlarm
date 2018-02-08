@@ -1,0 +1,79 @@
+{
+  "project_info": {
+    "project_number": "1019104744841",
+    "firebase_url": "https://vehiclealarm-1ec9d.firebaseio.com",
+    "project_id": "vehiclealarm-1ec9d",
+    "storage_bucket": "vehiclealarm-1ec9d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1019104744841:android:3e3e5c141f4160d4",
+        "android_client_info": {
+          "package_name": "es.gpsou.vehiclealarm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1019104744841-2pdmi9m81ebtvrhkifdc7da3l5l5m5mt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "es.gpsou.vehiclealarm",
+            "certificate_hash": "337fa1171160948e4f33c7c253bf27da90e09ca3"
+          }
+        },
+        {
+          "client_id": "1019104744841-oaulm4a5rl7106250d894he084vqs77k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "es.gpsou.vehiclealarm",
+            "certificate_hash": "ffebf80388ba619eedf9b2a7b40264dbd1e5de92"
+          }
+        },
+        {
+          "client_id": "1019104744841-2baahjgjcf6a8nnv05stgtb6jrfrmuac.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "es.gpsou.vehiclealarm",
+            "certificate_hash": "33e502a23534b964a92527168976e32456db68be"
+          }
+        },
+        {
+          "client_id": "1019104744841-4rrjmv9m6cpp6d050eljqo3m10s1m9aj.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "1019104744841-gfbudfibgdb149cjjrk8jf7rs4bopbt2.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "1019104744841-kth07hi84161mo9mr3vk1kqbvj021023.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRdOUqCemQ_dBUd9-ni8Kk0fAEfOY3NpE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1019104744841-4rrjmv9m6cpp6d050eljqo3m10s1m9aj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

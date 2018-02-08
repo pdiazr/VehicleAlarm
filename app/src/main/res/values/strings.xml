@@ -1,0 +1,117 @@
+<resources>
+    <string name="app_name">VehicleAlarm</string>
+<!--    <string name="aid">F0394148148100</string> -->
+    <string name="aid">F0C0698AB129EB</string>
+    <string name="HCEServiceDesc">VehicleAlarm</string>
+    <string name="aiddescription">VehicleAlarm</string>
+
+    <string name="title_activity_configure">Configuración</string>
+
+    <string name="conf_vehicle_button">For Vehicle</string>
+    <string name="conf_monitoring_button">For Monitoring</string>
+    <string name="conf_account_not_available">Debes tener configurada una cuenta de Google para usar la aplicación en modo monitor</string>
+    <string name="conf_account_permission_reject">Permiso rechazado para acceder al identificador de la cuenta de Google</string>
+    <string name="conf_location_permission_reject">Localización desactivada</string>
+    <string name="conf_google_api_not_available">Dispositivo no soportado</string>
+    <string name="conf_dialog_msg">Para utilizar la aplicación en modo montor es necesario permitir acceso al identificador de tu cuenta de Google</string>
+    <string name="conf_dialog_ok">Aceptar</string>
+    <string name="title_activity_nfc_monitor">Emparejamiento NFC</string>
+
+    <string name="nfc_monitor_pairing_instructions">Activa la opción de emparejamiento en el dispositivo sensor que colocarás en el vehículo y aproxima ambos por la parte trasera.</string>
+    <string name="nfc_monitor_pairing_button">Continuar</string>
+    <string name="nfc_monitor_dialog_title">Emparejamiento NFC</string>
+    <string name="nfc_monitor_dialog_info">Emparejamiento con el dispositivo sensor en curso...</string>
+
+    <string name="bt_monitor_pairing_instructions">Activa la opción de emparejamiento por Bluetooth en el dispositivo sensor y selecciónalo cuando aparezca en la lista:.</string>
+    <string name="bt_monitor_dialog_title">Emparejamiento Bluetooth</string>
+    <string name="bt_monitor_dialog_info">Emparejamiento con el dispositivo sensor en curso...</string>
+    <string name="bt_monitor_pairing_error">No se ha podido realizar el emparejamiento</string>
+
+
+    <string name="monitor_test_string">EMPAREJAMIENTO CORRECTO</string>
+    <string name="monitor_active">PANEL DE CONTROL</string>
+    <string name="monitor_getLocation_button">Obtener ubicación</string>
+    <string name="monitor_activate_tracking_button">Activar seguimiento</string>
+    <string name="monitor_deactivate_tracking_button">Desactivar seguimiento</string>
+    <string name="monitor_menu_refresh">Actualizar</string>
+    <string name="monitor_menu_tracking">Activar seguimiento</string>
+    <string name="monitor_menu_test">Comprobar emparejamiento</string>
+    <string name="monitor_menu_conf">Configuración</string>
+    <string name="monitor_menu_reset">Reiniciar emparejamiento</string>
+    <string name="monitor_dialog_reset">Se perderá el emparejamiento con el dispositivo del vehículo.\n ¿Deseas continuar?</string>
+    <string name="monitor_dialog_reset_ok">Continuar</string>
+    <string name="monitor_dialog_reset_cancel">Cancelar</string>
+    <string name="monitor_getLocation_toast">Actualización de datos en curso...</string>
+    <string name="monitor_activateTracking_toast">Activando seguimiento...</string>
+    <string name="monitor_errorAudio_toast">Error al activar el audio</string>
+    <string name="monitor_activateAudio_toast">Activando audio...</string>
+
+    <string name="monitor_loc_permission_error">Revisa los permisos de localización del terminal emparejado</string>
+
+    <string name="monitor_map_marker_tittle">Posición del Vehículo</string>
+    <string name="monitor_map_marker_snippet">Cuándo: </string>
+
+
+    <string name="nfc_vehicle_pairing_instructions">Activa la opción de emparejamiento en el disposiivos monitor y aproxima ambos por parte trasera.</string>
+
+    <string name="bt_vehicle_pairing_instructions">Activa la opción de emparejamiento por Bluetooth en el disposiivos sensor y selecciona este dispositivo:</string>
+
+    <string name="MFMS_successful_pairing">Emparejamiento realizado con éxito</string>
+    <string name="MFMS_audio_error">Error de audio en el dispositivo sensor</string>
+
+    <string name="Pairing_error">Se ha producido un error al emparejar. Asegúrate de tener disponible una conexión a internet</string>
+    <string name="FirebaseId_error">Se ha producido un error al generar ID para el dispositivo</string>
+    <string name="title_activity_monitor">Dispositivo Monitor</string>
+    <string name="title_activity_nfc_vehicle">Emparejamiento NFC</string>
+    <string name="title_activity_vehicle">Dispositivo Sensor</string>
+
+
+    <string name="vehicle_test_string">EMPAREJAMIENTO CORRECTO</string>
+    <string name="vehicle_on_button">Activado</string>
+    <string name="vehicle_off_button">Desactivado</string>
+    <string name="vehicle_menu_test">Comprobar emparejamiento</string>
+    <string name="vehicle_menu_conf">Configuración</string>
+    <string name="vehicle_menu_reset">Reiniciar emparejamiento</string>
+    <string name="vehicle_dialog_reset">Se perderá el emparejamiento con el dispositivo monitor.\n ¿Deseas continuar?</string>
+    <string name="vehicle_dialog_reset_ok">Continuar</string>
+    <string name="vehicle_dialog_reset_cancel">Cancelar</string>
+    <string name="vehicle_dialog_back">¿Deseas detener la monitorización?</string>
+    <string name="vehicle_dialog_back_ok">Sí</string>
+    <string name="vehicle_dialog_back_cancel">No</string>
+
+
+    <string name="title_activity_map">Zona Vigilancia</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_monitor_map">Ubicación Vehículo</string>
+    <string name="title_activity_vehicle_settings">Configuración</string>
+    <string name="title_activity_monitor_settings">Configuración</string>
+    <string name="title_activity_bt_client">Emparejamiento vía Bluetooth</string>
+    <string name="title_activity_bt_server">Emparejamiento vía Bluetooth</string>
+
+    <string name="settings_sensor_active">SettingsSensorActive</string>
+    <string name="settings_sensor_active_title">Sensor de Movimiento</string>
+    <string name="settings_sensor_active_summary">Envío de avisos de detección de movimiento por vibración (incrementa el consumo de batería)</string>
+    <string name="settings_sensor_sensitivity">SettingsSensorSensitiveness</string>
+    <string name="settings_sensor_sensitivity_title">Sensibilidad:&#160;</string>
+    <string name="settings_sensor_sensitivity_summary">Ajustar la sensibilidad del sensor de movimiento</string>
+    <string name="settings_location_active">SettingsLocationActive</string>
+    <string name="settings_location_active_title">Localización</string>
+    <string name="settings_location_active_summary">Envío de avisos por cambio de ubicación</string>
+    <string name="settings_location_time">SettingsLocationTime</string>
+    <string name="settings_location_time_title">Tiempo de Parada (seg.)</string>
+    <string name="settings_location_time_summary">Tiempo entre mediciones para detectar una parada</string>
+    <string name="settings_location_radius">SettingsLocationRadius</string>
+    <string name="settings_location_radius_title">Radio:&#160;</string>
+    <string name="settings_location_radius_summary">Distancia de detección de cambio de ubicación</string>
+    <string name="settings_sensor_tone">SettingsSensorTone</string>
+    <string name="settings_sensor_tone_title">Sonido de Alerta del Sensor de Movimiento</string>
+    <string name="settings_location_tone">SettingsLocationTone</string>
+    <string name="settings_location_tone_title">Sonido de Alarma por Cambio de Ubicación</string>
+    <string name="settings_proximity">SettingsCheckProximity</string>
+    <string name="settings_proximity_title">Desactivar avisos cerca del vehiculo</string>
+    <string name="settings_proximity_summary">Desactivar avisos del sensor de movimiento y de cambios de ubicación cuando ambos dispositivos se encuentran próximos (requiere activar bluetooth en ambos dispositivos)</string>
+    <string name="settings_turn_server">SettingsTurnServer</string>
+    <string name="settings_turn_server_title">Servidor STUN/TURN (host:port)</string>
+    <string name="settings_turn_server_summary">Si la configuración de NAT no permite la comunicación Peer to Peer, puede ser necesario configurar un servidor STUN/TURN para activar la función de audio</string>
+
+</resources>

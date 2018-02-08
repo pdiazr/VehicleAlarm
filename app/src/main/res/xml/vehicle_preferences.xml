@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:key="@string/settings_sensor_active"
+        android:title="@string/settings_sensor_active_title"
+        android:summary="@string/settings_sensor_active_summary"
+        android:defaultValue="true" />
+    <SeekBarPreference
+        android:key="@string/settings_sensor_sensitivity"
+        android:title="@string/settings_sensor_sensitivity_title"
+        android:summary="@string/settings_sensor_sensitivity_summary"
+        android:max="100"
+        android:defaultValue="30" />
+    <SwitchPreference
+        android:key="@string/settings_location_active"
+        android:title="@string/settings_location_active_title"
+        android:summary="@string/settings_location_active_summary"
+        android:defaultValue="true" />
+    <EditTextPreference
+        android:inputType="number"
+        android:key="@string/settings_location_time"
+        android:title="@string/settings_location_time_title"
+        android:summary="@string/settings_location_time_summary"
+        android:defaultValue="300" />
+    <SeekBarPreference
+        android:key="@string/settings_location_radius"
+        android:title="@string/settings_location_radius_title"
+        android:summary="@string/settings_location_radius_summary"
+        android:max="1000"
+        android:defaultValue="150" />
+</PreferenceScreen>

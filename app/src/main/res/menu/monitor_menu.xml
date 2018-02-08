@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/monitor_menu_refresh"
+        android:icon="@drawable/ic_action_refresh"
+        android:title="@string/monitor_menu_refresh"
+        app:showAsAction="always|withText" />
+    <item
+        android:id="@+id/monitor_menu_tracking"
+        android:icon="@mipmap/ic_red_icon"
+        android:title="@string/monitor_menu_tracking" />
+    <item
+        android:id="@+id/monitor_menu_test"
+        android:title="@string/monitor_menu_test" />
+    <item
+        android:id="@+id/monitor_menu_conf"
+        android:title="@string/monitor_menu_conf" />
+    <item
+        android:id="@+id/monitor_menu_reset"
+        android:title="@string/monitor_menu_reset" />
+</menu>

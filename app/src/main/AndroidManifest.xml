@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="es.gpsou.vehiclealarm">
+
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.LOCAL_MAC_ADDRESS" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".MainActivity"
+            android:noHistory="true">
+
+            <!--
+     Set custom default icon. This is used when no icon is set for incoming notification messages.
+     See README(https://goo.gl/l4GJaQ) for more.
+            -->
+            <meta-data
+                android:name="com.google.firebase.messaging.default_notification_icon"
+                android:resource="@drawable/ic_stat_ic_notification" />
+            <!--
+                 Set color used with incoming notification messages. This is used when no color is set for the incoming
+                 notification message. See README(https://goo.gl/6BKBk7) for more.
+            -->
+            <meta-data
+                android:name="com.google.firebase.messaging.default_notification_color"
+                android:resource="@color/colorAccent" />
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ConfigureActivity"
+            android:label="@string/title_activity_configure"
+            android:noHistory="false"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".NfcMonitorActivity"
+            android:label="@string/title_activity_nfc_monitor"
+            android:launchMode="singleTop"
+            android:noHistory="true"
+            android:parentActivityName=".ConfigureActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="es.gpsou.vehiclealarm.ConfigureActivity" />
+        </activity>
+
+        <service
+            android:name=".HCEService"
+            android:exported="true"
+            android:permission="android.permission.BIND_NFC_SERVICE">
+            <intent-filter>
+                <action android:name="android.nfc.cardemulation.action.HOST_APDU_SERVICE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.nfc.cardemulation.host_apdu_service"
+                android:resource="@xml/apduservice" />
+        </service>
+        <service android:name=".MyFirebaseMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".MyFirebaseInstanceIDService"
+            android:enabled="false"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name=".MonitorActivity"
+            android:label="@string/title_activity_monitor"
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".NfcVehicleActivity"
+            android:label="@string/title_activity_nfc_vehicle"
+            android:noHistory="true"
+            android:parentActivityName=".ConfigureActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="es.gpsou.vehiclealarm.ConfigureActivity" />
+        </activity>
+        <activity
+            android:name=".VehicleActivity"
+            android:label="@string/title_activity_vehicle"
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <service
+            android:name=".LocationEventsService"
+            android:exported="false" />
+        <service
+            android:name=".ParkDetectionIntentService"
+            android:exported="false" />
+
+        <!--
+             The API key for Google Maps-based APIs is defined as a string resource.
+             (See the file "res/values/google_maps_api.xml").
+             Note that the API key is linked to the encryption key used to sign the APK.
+             You need a different API key for each encryption key, including the release key that is used to
+             sign the APK for publishing.
+             You can define the keys for the debug and release targets in src/debug/ and src/release/.
+        -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
+
+        <activity
+            android:name=".MapActivity"
+            android:label="@string/title_activity_map"
+            android:launchMode="singleTask"
+            android:parentActivityName=".VehicleActivity" />
+        <activity
+            android:name=".MonitorMapActivity"
+            android:label="@string/title_activity_monitor_map"
+            android:parentActivityName=".MonitorActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MonitorActivity" />
+        </activity>
+        <activity
+            android:name=".VehicleSettingsActivity"
+            android:label="@string/title_activity_vehicle_settings"
+            android:parentActivityName=".VehicleActivity" />
+        <activity
+            android:name=".MonitorSettingsActivity"
+            android:label="@string/title_activity_monitor_settings"
+            android:parentActivityName=".MonitorActivity" />
+
+        <service
+            android:name=".SensorService"
+            android:enabled="true"
+            android:exported="false"
+            android:stopWithTask="false" />
+
+        <activity
+            android:name=".BtClientActivity"
+            android:label="@string/title_activity_bt_client"
+            android:parentActivityName=".ConfigureActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="es.gpsou.vehiclealarm.ConfigureActivity" />
+        </activity>
+        <activity
+            android:name=".BtServerActivity"
+            android:label="@string/title_activity_bt_server"
+            android:parentActivityName=".ConfigureActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="es.gpsou.vehiclealarm.ConfigureActivity" />
+        </activity>
+
+        <service
+            android:name=".AudioService"
+            android:exported="false"></service>
+    </application>
+
+</manifest>

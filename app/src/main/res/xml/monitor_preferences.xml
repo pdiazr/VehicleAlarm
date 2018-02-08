@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <RingtonePreference
+        android:ringtoneType="notification"
+        android:key="@string/settings_sensor_tone"
+        android:title="@string/settings_sensor_tone_title" />
+    <RingtonePreference
+        android:ringtoneType="alarm"
+        android:key="@string/settings_location_tone"
+        android:title="@string/settings_location_tone_title" />
+    <SwitchPreference
+        android:key="@string/settings_proximity"
+        android:title="@string/settings_proximity_title"
+        android:summary="@string/settings_proximity_summary"
+        android:defaultValue="false" />
+    <EditTextPreference
+        android:inputType="text"
+        android:key="@string/settings_turn_server"
+        android:title="@string/settings_turn_server_title"
+        android:summary="@string/settings_turn_server_summary"
+        android:defaultValue="" />
+</PreferenceScreen>

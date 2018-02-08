@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/vehicle_menu_test"
+        android:title="@string/vehicle_menu_test" />
+    <item
+        android:id="@+id/vechicle_menu_conf"
+        android:title="@string/vehicle_menu_conf" />
+    <item
+        android:id="@+id/vehicle_menu_reset"
+        android:title="@string/vehicle_menu_reset" />
+</menu>
