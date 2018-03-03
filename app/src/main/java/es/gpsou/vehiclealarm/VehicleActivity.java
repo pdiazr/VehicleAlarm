@@ -132,7 +132,7 @@ public class VehicleActivity extends AppCompatActivity {
         Intent intent = new Intent(this, SensorService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
-        checkLocResolutionRequest(getIntent());
+        checkIntentPayload(getIntent());
     }
 
 
@@ -140,7 +140,7 @@ public class VehicleActivity extends AppCompatActivity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
 
-        checkLocResolutionRequest(intent);
+        checkIntentPayload(intent);
 
     }
 
@@ -173,7 +173,12 @@ public class VehicleActivity extends AppCompatActivity {
         }
     }
 
-    private void checkLocResolutionRequest(Intent intent) {
+    private void checkIntentPayload(Intent intent) {
+        if(intent.getBooleanExtra(Globals.SWITCH_MONITORING, false)) {
+            switchMonitoring(null);
+            return;
+        }
+
         PendingIntent pI = (PendingIntent) (intent.getParcelableExtra(Globals.RESOLUTION_REQUIRED));
         if(pI!=null) {
             try {
@@ -187,7 +192,10 @@ public class VehicleActivity extends AppCompatActivity {
     public void switchMonitoring(View v) {
         ImageView image = (ImageView) findViewById(R.id.imageView);
         TransitionDrawable drawable = (TransitionDrawable) image.getDrawable();
-        MenuItem item=menu.findItem(R.id.vechicle_menu_conf);
+        MenuItem item = null;
+
+        if(menu != null)
+            item=menu.findItem(R.id.vechicle_menu_conf);
 
         if(monitoringActivated) {
             Intent intent=new Intent(this, SensorService.class);
@@ -199,7 +207,6 @@ public class VehicleActivity extends AppCompatActivity {
             ls.opDeactivateGeofence(this);
             ls.opDeactivateTracking(this);
 
-            item.setEnabled(true);
             drawable.reverseTransition(500);
         } else {
             SharedPreferences settings=this.getSharedPreferences(Globals.CONFIGURACION, 0);
@@ -216,10 +223,28 @@ public class VehicleActivity extends AppCompatActivity {
                 Log.d(Globals.TAG, "Alarma de detección de parada activada");
             }
 
-            item.setEnabled(false);
             drawable.startTransition(500);
         }
+
+        if(item != null)
+            item.setEnabled(monitoringActivated);
+
         monitoringActivated=!monitoringActivated;
+
+        SharedPreferences settings=getSharedPreferences(Globals.CONFIGURACION, 0);
+        FirebaseMessaging fm = FirebaseMessaging.getInstance();
+
+        String groupId=settings.getString(Globals.FB_GROUP_ID, null);
+
+        String to = groupId;
+        String id = Integer.toString(Globals.msgId.incrementAndGet());
+        fm.send(new RemoteMessage.Builder(to)
+                .setMessageId(id)
+                .addData(Globals.P2P_DEST, Globals.P2P_DEST_MONITOR)
+                .addData(Globals.P2P_OP, Globals.P2P_OP_SWITCH_MONITORING)
+                .addData(Globals.P2P_MONITORING_ACTIVATED, monitoringActivated?Globals.TRUE:Globals.FALSE)
+                .setTtl(3600)
+                .build());
     }
 
     private ServiceConnection mConnection = new ServiceConnection() {

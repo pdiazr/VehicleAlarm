@@ -29,6 +29,12 @@ public class MonitorSettingsFragment extends PreferenceFragment implements Share
 
         preference = findPreference(getString(R.string.settings_location_tone));
         preference.setSummary(RingtoneManager.getRingtone(getActivity(), Uri.parse(settings.getString(getString(R.string.settings_location_tone), ""))).getTitle(getActivity()));
+
+        preference = findPreference(getString(R.string.settings_turn_server));
+        preference.setSummary(settings.getString(getString(R.string.settings_turn_server), ""));
+
+        preference = findPreference(getString(R.string.settings_turn_username));
+        preference.setSummary(settings.getString(getString(R.string.settings_turn_username), ""));
     }
 
     @Override
@@ -56,6 +62,12 @@ public class MonitorSettingsFragment extends PreferenceFragment implements Share
             Preference preference = findPreference(key);
             preference.setSummary(RingtoneManager.getRingtone(getActivity(), Uri.parse(sharedPreferences.getString(key, ""))).getTitle(getActivity()));
         } else if (key.equals(getString(R.string.settings_location_tone))) {
+            Preference preference = findPreference(key);
+            preference.setSummary(RingtoneManager.getRingtone(getActivity(), Uri.parse(sharedPreferences.getString(key, ""))).getTitle(getActivity()));
+        } else if (key.equals(getString(R.string.settings_turn_server))) {
+            Preference preference = findPreference(key);
+            preference.setSummary(RingtoneManager.getRingtone(getActivity(), Uri.parse(sharedPreferences.getString(key, ""))).getTitle(getActivity()));
+        } else if (key.equals(getString(R.string.settings_turn_username))) {
             Preference preference = findPreference(key);
             preference.setSummary(RingtoneManager.getRingtone(getActivity(), Uri.parse(sharedPreferences.getString(key, ""))).getTitle(getActivity()));
         }

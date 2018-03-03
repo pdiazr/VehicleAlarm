@@ -13,10 +13,27 @@
         android:title="@string/settings_proximity_title"
         android:summary="@string/settings_proximity_summary"
         android:defaultValue="false" />
-    <EditTextPreference
-        android:inputType="text"
-        android:key="@string/settings_turn_server"
-        android:title="@string/settings_turn_server_title"
-        android:summary="@string/settings_turn_server_summary"
-        android:defaultValue="" />
+    <PreferenceScreen
+        android:title="@string/settings_turn"
+        android:summary="@string/settings_turn_summary"
+        android:persistent="false">
+            <PreferenceCategory
+                android:title="@string/settings_turn">
+            <EditTextPreference
+                android:inputType="text"
+                android:key="@string/settings_turn_server"
+                android:title="@string/settings_turn_server_title"
+                android:defaultValue="" />
+            <EditTextPreference
+                android:inputType="text"
+                android:key="@string/settings_turn_username"
+                android:title="@string/settings_turn_username_title"
+                android:defaultValue="" />
+            <EditTextPreference
+                android:inputType="textPassword"
+                android:key="@string/settings_turn_password"
+                android:title="@string/settings_turn_password_title"
+                android:defaultValue="" />
+            </PreferenceCategory>
+    </PreferenceScreen>
 </PreferenceScreen>

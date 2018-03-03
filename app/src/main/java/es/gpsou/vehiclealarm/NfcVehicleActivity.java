@@ -1,6 +1,7 @@
 package es.gpsou.vehiclealarm;
 
 import android.bluetooth.BluetoothAdapter;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.nfc.NfcAdapter;
@@ -8,8 +9,10 @@ import android.nfc.Tag;
 import android.nfc.tech.IsoDep;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -55,6 +58,7 @@ public class NfcVehicleActivity extends AppCompatActivity implements NfcAdapter.
         AID_ANDROID=hexStringToByteArray(getString(R.string.aid));
 
         nfcAdapter=NfcAdapter.getDefaultAdapter(this);
+
         if(nfcAdapter==null) {
             Intent intent = new Intent(this, BtServerActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
@@ -65,7 +69,30 @@ public class NfcVehicleActivity extends AppCompatActivity implements NfcAdapter.
     @Override
     public void onResume() {
         super.onResume();
+
         try {
+            if(!nfcAdapter.isEnabled()) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+                builder.setMessage(R.string.nfc_dialog_activate);
+
+                builder.setPositiveButton(R.string.nfc_dialog_activate_ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int dialogId) {
+                        startActivity(new Intent(Settings.ACTION_NFC_SETTINGS));
+                    }
+                });
+                builder.setNegativeButton(R.string.nfc_dialog_activate_cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Intent intent = new Intent(NfcVehicleActivity.this, BtServerActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                        startActivity(intent);
+                    }
+                });
+                builder.setCancelable(false);
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+
             nfcAdapter.enableReaderMode(this, this, NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
                     null);
         } catch(Exception e) {
@@ -78,7 +105,8 @@ public class NfcVehicleActivity extends AppCompatActivity implements NfcAdapter.
     @Override
     public void onPause() {
         super.onPause();
-        nfcAdapter.disableReaderMode(this);
+        if(nfcAdapter != null)
+            nfcAdapter.disableReaderMode(this);
     }
 
     @Override

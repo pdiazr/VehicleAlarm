@@ -124,7 +124,7 @@ public class SdpUtils
                     parseCandidate(attribute, stream);
             }
 
-            //set default candidates
+            //set default_tone candidates
             Connection streamConn = desc.getConnection();
             String streamConnAddr = null;
             if(streamConn != null)

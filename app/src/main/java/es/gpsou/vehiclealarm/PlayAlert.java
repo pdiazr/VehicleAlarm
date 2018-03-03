@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.util.Log;
 
 /**
  * Created by Pedro on 28/05/2017.
@@ -43,8 +42,13 @@ public class PlayAlert extends Thread implements MediaPlayer.OnCompletionListene
         if(uri==null)
             uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
-        Log.d(Globals.TAG, uri.toString());
-        MediaPlayer mp = MediaPlayer.create(context.getApplicationContext(), uri);
+        MediaPlayer mp=null;
+
+        if(uri != null)
+            mp = MediaPlayer.create(context.getApplicationContext(), uri);
+        else
+            mp = MediaPlayer.create(context.getApplicationContext(), R.raw.defaulttone);
+
         mp.setOnCompletionListener(this);
 
         if(type==RingtoneManager.TYPE_ALARM) {

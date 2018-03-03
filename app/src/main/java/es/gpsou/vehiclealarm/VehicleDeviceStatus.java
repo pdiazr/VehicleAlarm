@@ -19,4 +19,5 @@ public class VehicleDeviceStatus {
     public int parkingStatus=0;
     public boolean trackingActive=false;
     public boolean audioOn=false;
+    public boolean monitoringActivated=false;
 }

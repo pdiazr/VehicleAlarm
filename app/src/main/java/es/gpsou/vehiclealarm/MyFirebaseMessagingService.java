@@ -106,7 +106,7 @@ import java.util.Date;
 
                             UDPLinkMgr mUDPLinkMgr = UDPLinkMgr.getInstance();
 
-                            String SDPstr=mUDPLinkMgr.getSDPString(stunServer);
+                            String SDPstr=mUDPLinkMgr.getSDPString(stunServer, null, null);
 
                             if(SDPstr==null)
                                 SDPstr=Globals.NULL;
@@ -131,6 +131,9 @@ import java.util.Date;
                         } else if(op.compareTo(Globals.P2P_OP_STOP_AUDIO)==0) {
                             UDPLinkMgr mUDPLinkMgr=UDPLinkMgr.getInstance();
                             mUDPLinkMgr.stopAudio();
+                        } else if(op.compareTo(Globals.P2P_OP_SWITCH_MONITORING)==0) {
+                            startActivity(new Intent(this, VehicleActivity.class)
+                                    .putExtra(Globals.SWITCH_MONITORING, true).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
                         }
                     } else if (op.compareTo(Globals.P2P_OP_SET_GROUP_ID) == 0 && mode.compareTo(Globals.NULL) == 0) {
                         SharedPreferences.Editor editor = settings.edit();
@@ -402,6 +405,15 @@ import java.util.Date;
                                 intent.putExtra(AudioService.REMOTE_RECEIVED, remoteReceived);
                                 startService(intent);
                             }
+                        } else if(op.compareTo(Globals.P2P_OP_SWITCH_MONITORING) == 0) {
+                            String monitoringActivated=data.getString(Globals.P2P_MONITORING_ACTIVATED);
+                            if(monitoringActivated.compareTo(Globals.TRUE) == 0)
+                                vds.monitoringActivated=true;
+                            else if(monitoringActivated.compareTo(Globals.FALSE) == 0)
+                                vds.monitoringActivated=false;
+
+                            broadcastIntent.putExtra(Globals.P2P_OP, Globals.MONITORING);
+                            sendOrderedBroadcast(broadcastIntent, null);
                         }
                     } else if (op.compareTo(Globals.P2P_OP_SET_GROUP_ID_RESULT) == 0 && mode.compareTo(Globals.NULL) == 0) {
                         SharedPreferences.Editor editor=settings.edit();

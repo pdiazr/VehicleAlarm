@@ -60,7 +60,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingStart="10dp"
-                android:text="20:37" />
+                android:text="20:37"
+                android:paddingLeft="10dp" />
 
             <TextView
                 android:id="@+id/textView8"
@@ -71,7 +72,8 @@
                 android:paddingStart="10dp"
                 android:text="Alarma Vibración"
                 android:textSize="20sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:paddingLeft="10dp" />
         </LinearLayout>
 
         <ImageView
@@ -115,7 +117,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingStart="10dp"
-                android:text="20:37" />
+                android:text="20:37"
+                android:paddingLeft="10dp" />
 
             <TextView
                 android:id="@+id/textView9"
@@ -129,7 +132,8 @@
                 android:textColorLink="@android:color/holo_red_dark"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                tools:text="Alarma Movimiento" />
+                tools:text="Alarma Movimiento"
+                android:paddingLeft="10dp" />
         </LinearLayout>
 
         <ImageView
@@ -258,5 +262,17 @@
         android:layout_marginTop="15dp"
         android:onClick="activateAudio"
         app:srcCompat="@drawable/ic_audio_off" />
+
+    <ImageView
+        android:id="@+id/monitoringIcon"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignBottom="@+id/audioIcon"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginEnd="15dp"
+        android:layout_marginRight="15dp"
+        android:onClick="switchMonitoring"
+        app:srcCompat="@drawable/onoff_green" />
 
 </RelativeLayout>

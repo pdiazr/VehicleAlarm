@@ -45,6 +45,7 @@
     <string name="monitor_activateTracking_toast">Activando seguimiento...</string>
     <string name="monitor_errorAudio_toast">Error al activar el audio</string>
     <string name="monitor_activateAudio_toast">Activando audio...</string>
+    <string name="monitor_switchMonitoring_toast">Enviando operación...</string>
 
     <string name="monitor_loc_permission_error">Revisa los permisos de localización del terminal emparejado</string>
 
@@ -53,6 +54,11 @@
 
 
     <string name="nfc_vehicle_pairing_instructions">Activa la opción de emparejamiento en el disposiivos monitor y aproxima ambos por parte trasera.</string>
+
+    <string name="nfc_dialog_activate">Debes activar NFC para el emparejamiento por contacto.\nTambién puedes realizar el emparejamiento por Bluetooth:</string>
+    <string name="nfc_dialog_activate_ok">Activar NFC</string>
+    <string name="nfc_dialog_activate_cancel">Bluetooth</string>
+
 
     <string name="bt_vehicle_pairing_instructions">Activa la opción de emparejamiento por Bluetooth en el disposiivos sensor y selecciona este dispositivo:</string>
 
@@ -110,8 +116,13 @@
     <string name="settings_proximity">SettingsCheckProximity</string>
     <string name="settings_proximity_title">Desactivar avisos cerca del vehiculo</string>
     <string name="settings_proximity_summary">Desactivar avisos del sensor de movimiento y de cambios de ubicación cuando ambos dispositivos se encuentran próximos (requiere activar bluetooth en ambos dispositivos)</string>
+    <string name="settings_turn">Configuración servidor TURN</string>
+    <string name="settings_turn_summary">Si la configuración de NAT no permite la comunicación Peer to Peer, puede ser necesario configurar un servidor STUN/TURN para activar la función de audio</string>
     <string name="settings_turn_server">SettingsTurnServer</string>
     <string name="settings_turn_server_title">Servidor STUN/TURN (host:port)</string>
-    <string name="settings_turn_server_summary">Si la configuración de NAT no permite la comunicación Peer to Peer, puede ser necesario configurar un servidor STUN/TURN para activar la función de audio</string>
+    <string name="settings_turn_username">SettingsTurnUsername</string>
+    <string name="settings_turn_username_title">Usuario</string>
+    <string name="settings_turn_password">SettingsTurnPassword</string>
+    <string name="settings_turn_password_title">Password</string>
 
 </resources>

@@ -17,6 +17,7 @@ import org.ice4j.ice.Component;
 import org.ice4j.ice.IceMediaStream;
 import org.ice4j.ice.IceProcessingState;
 import org.ice4j.ice.harvest.TurnCandidateHarvester;
+import org.ice4j.security.LongTermCredential;
 import org.ice4j.socket.IceSocketWrapper;
 
 import java.beans.PropertyChangeEvent;
@@ -72,7 +73,7 @@ public class UDPLinkMgr {
     private UDPLinkMgr() {
     }
 
-    public String getSDPString(String stunServer) {
+    public String getSDPString(String stunServer, String username, String password) {
         if(agent!=null)
             return(SDPString);
 
@@ -108,7 +109,8 @@ public class UDPLinkMgr {
                 // InetAddress qualifies a url to an IP Address, if you have an error here, make sure the url is reachable and correct
                 TransportAddress ta = new TransportAddress(InetAddress.getByName(hostname), stunPort, Transport.UDP);
                 // Currently Ice4J only supports UDP and will throw an Error otherwise
-                agent.addCandidateHarvester(new TurnCandidateHarvester(ta));
+//                agent.addCandidateHarvester(new TurnCandidateHarvester(ta));
+                agent.addCandidateHarvester(new TurnCandidateHarvester(ta, new LongTermCredential(username, password)));
             } catch (Exception e) {
                 e.printStackTrace();
                 stopAudio();

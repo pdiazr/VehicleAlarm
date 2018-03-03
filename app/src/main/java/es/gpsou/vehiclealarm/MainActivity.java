@@ -3,10 +3,10 @@ package es.gpsou.vehiclealarm;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,16 +21,22 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences settings=getSharedPreferences(Globals.CONFIGURACION, 0);
 
 
-        Log.d(Globals.TAG, RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_NOTIFICATION).toString());
-        Log.d(Globals.TAG, RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM).toString());
+//        Log.d(Globals.TAG, RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_NOTIFICATION).toString());
+//        Log.d(Globals.TAG, RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM).toString());
 
         if(settings.getString(getString(R.string.settings_sensor_tone),null)==null) {
 
+            Uri tone=null;
             SharedPreferences.Editor editor = settings.edit();
-            editor.putString(getString(R.string.settings_sensor_tone),
-                    RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_NOTIFICATION).toString());
-            editor.putString(getString(R.string.settings_location_tone),
-                    RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM).toString());
+
+            tone=RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_NOTIFICATION);
+            if(tone != null)
+                editor.putString(getString(R.string.settings_sensor_tone), tone.toString());
+
+            tone=RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM);
+            if(tone != null)
+                editor.putString(getString(R.string.settings_location_tone), tone.toString());
+
             editor.apply();
         }
 

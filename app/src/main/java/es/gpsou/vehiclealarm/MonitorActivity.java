@@ -88,6 +88,7 @@ public class MonitorActivity extends AppCompatActivity {
             vds.sensorAlarm=settings.getBoolean("SENSOR_ALARM", false);
             vds.sensorAlarmTs=settings.getLong("SENSOR_ALARM_TS", 0);
             vds.trackingActive=settings.getBoolean("TRACKING_ACTIVE", false);
+            vds.monitoringActivated=settings.getBoolean("MONITORING_ACTIVATED", false);
         }
     }
 
@@ -121,6 +122,7 @@ public class MonitorActivity extends AppCompatActivity {
         editor.putBoolean("SENSOR_ALARM", vds.sensorAlarm);
         editor.putLong("SENSOR_ALARM_TS", vds.sensorAlarmTs);
         editor.putBoolean("TRACKING_ACTIVE", vds.trackingActive);
+        editor.putBoolean("MONITORING_ACTIVATED", vds.monitoringActivated);
         editor.apply();
     }
 
@@ -210,6 +212,7 @@ public class MonitorActivity extends AppCompatActivity {
                                 editor.putBoolean("SENSOR_ALARM", vds.sensorAlarm);
                                 editor.putLong("SENSOR_ALARM_TS", vds.sensorAlarmTs);
                                 editor.putBoolean("TRACKING_ACTIVE", vds.trackingActive);
+                                editor.putBoolean("MONITORING_ACTIVATED", vds.monitoringActivated);
                                 editor.apply();
                             }
                         }.start();
@@ -448,12 +451,22 @@ public class MonitorActivity extends AppCompatActivity {
             imageView.setImageResource(R.drawable.ic_audio_off);
     }
 
+    private void setMonitoringUI() {
+        VehicleDeviceStatus vds=Globals.vehicleDeviceStatus;
+        ImageView imageView=(ImageView) findViewById(R.id.monitoringIcon);
+        if(vds.monitoringActivated)
+            imageView.setImageResource(R.drawable.onoff_red);
+        else
+            imageView.setImageResource(R.drawable.onoff_green);
+    }
+
     private void repaint() {
         setLocationUI(false);
         setSensorUI();
         setGeofenceUI();
         setTrackingUI();
         setAudioUI();
+        setMonitoringUI();
     }
 
     public class UpdateUI extends BroadcastReceiver {
@@ -486,6 +499,8 @@ public class MonitorActivity extends AppCompatActivity {
                     break;
                 case Globals.AUDIO:
                     setAudioUI();
+                case Globals.MONITORING:
+                    setMonitoringUI();
             }
 
             setResultCode(Activity.RESULT_OK);
@@ -497,6 +512,8 @@ public class MonitorActivity extends AppCompatActivity {
         if(!Globals.vehicleDeviceStatus.audioOn) {
             SharedPreferences settings = getSharedPreferences(Globals.CONFIGURACION, 0);
             final String stunServer = settings.getString(getString(R.string.settings_turn_server), "");
+            final String username = settings.getString(getString(R.string.settings_turn_username), null);
+            final String password = settings.getString(getString(R.string.settings_turn_password), null);
 
             new Thread() {
                 @Override
@@ -504,7 +521,7 @@ public class MonitorActivity extends AppCompatActivity {
 
                     UDPLinkMgr mUDPLinkMgr = UDPLinkMgr.getInstance();
 
-                    String SDPstr=mUDPLinkMgr.getSDPString(stunServer);
+                    String SDPstr=mUDPLinkMgr.getSDPString(stunServer, username, password);
 
                     if(SDPstr==null) {
                         Handler mainHandler = new Handler(getMainLooper());
@@ -565,5 +582,28 @@ public class MonitorActivity extends AppCompatActivity {
                     .setTtl(3600)
                     .build());
         }
+    }
+
+    public void switchMonitoring(View v) {
+        Handler mainHandler = new Handler(getMainLooper());
+
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(), R.string.monitor_switchMonitoring_toast, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        SharedPreferences settings = getSharedPreferences(Globals.CONFIGURACION, 0);
+        String to = settings.getString(Globals.FB_GROUP_ID, null);
+
+        FirebaseMessaging fm = FirebaseMessaging.getInstance();
+        String id = Integer.toString(Globals.msgId.incrementAndGet());
+        RemoteMessage.Builder mRemoteMessage = new RemoteMessage.Builder(to);
+        fm.send(mRemoteMessage.setMessageId(id)
+                .addData(Globals.P2P_DEST, Globals.P2P_DEST_IN_VEHICLE)
+                .addData(Globals.P2P_OP, Globals.P2P_OP_SWITCH_MONITORING)
+                .setTtl(3600)
+                .build());
     }
 }

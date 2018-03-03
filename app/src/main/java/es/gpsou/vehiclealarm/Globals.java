@@ -54,6 +54,7 @@ public class Globals {
     public static final String P2P_OP_AUDIO_REQ = "AudioReq";
     public static final String P2P_OP_AUDIO_RESP = "AudioResp";
     public static final String P2P_OP_STOP_AUDIO = "StopAudio";
+    public static final String P2P_OP_SWITCH_MONITORING = "SwitchMonitoring";
     public static final String P2P_LATITUDE = "Latitude";
     public static final String P2P_LONGITUDE = "Longitude";
     public static final String P2P_BATTERY = "Battery";
@@ -73,8 +74,10 @@ public class Globals {
     public static final String P2P_UDP_PORT = "UdpPort"; */
     public static final String P2P_SDP = "SDP";
     public static final String P2P_STUN_SERVER = "StunServer";
+    public static final String P2P_MONITORING_ACTIVATED = "MonitoringActivated";
     public static final String NULL = "NULL";
-
+    public static final String TRUE = "TRUE";
+    public static final String FALSE = "FALSE";
 
     public static final String IN_VEHICLE_MODE = "InVehicle";
     public static final String MONITORING_MODE = "Monitoring";
@@ -92,6 +95,7 @@ public class Globals {
     public static final int GEOFENCE_INTENT_REQUEST_CODE=1;
     public static final int LOCATION_UPDATE_INTENT_REQUEST_CODE=2;
     public static final String RESOLUTION_REQUIRED="ResolutionRequired";
+    public static final String SWITCH_MONITORING="SwitchMonitoring";
 
     public static AtomicInteger msgId = new AtomicInteger();
 
@@ -110,6 +114,7 @@ public class Globals {
     public static final int PARK=7;
     public static final int AUDIO=8;
     public static final int AUDIO_ACTIVATED=9;
+    public static final int MONITORING=10;
 
     public static final long LOCATION_UPDATE_INTERVAL=5000;
 }
