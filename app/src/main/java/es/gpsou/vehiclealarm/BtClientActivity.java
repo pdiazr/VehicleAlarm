@@ -297,7 +297,6 @@ public class BtClientActivity extends AppCompatActivity {
                     throw new RuntimeException(e);
                 }
                 outString=data.toString();
-
             }
 
             mmOutputStream.write(outString.getBytes(Charset.forName("UTF-8")));
