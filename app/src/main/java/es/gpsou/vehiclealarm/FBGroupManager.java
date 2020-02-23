@@ -38,8 +38,10 @@ public class FBGroupManager {
 
         Log.d(Globals.TAG, "Creamos nuevo Id de grupo de Firebase");
 
-        groupId = addNotificationKey(Globals.SENDER_ID, account.name, localFirebaseId, idToken);
-        addNotificationKey(Globals.SENDER_ID, account.name, remoteFirebaseId, idToken);
+        groupId = addNotificationKeys(Globals.SENDER_ID, account.name, localFirebaseId, remoteFirebaseId, idToken);
+
+//        groupId = addNotificationKey(Globals.SENDER_ID, account.name, localFirebaseId, idToken);
+//        addNotificationKey(Globals.SENDER_ID, account.name, remoteFirebaseId, idToken);
 
         return (groupId);
     }
@@ -64,7 +66,8 @@ public class FBGroupManager {
     static String addNotificationKey(
             String senderId, String name, String registrationId, String idToken)
             throws IOException, JSONException {
-        URL url = new URL("https://android.googleapis.com/gcm/googlenotification");
+        URL url = new URL("https://fcm.googleapis.com/fcm/googlenotification");
+//        URL url = new URL("https://android.googleapis.com/gcm/googlenotification");
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setDoOutput(true);
 
@@ -80,6 +83,48 @@ public class FBGroupManager {
         data.put("operation", "add");
         data.put("notification_key_name", name);
         data.put("registration_ids", new JSONArray(Arrays.asList(registrationId)));
+        data.put("id_token", idToken);
+        Log.d(Globals.TAG, "Add Notification KEY");
+        Log.d(Globals.TAG, senderId);
+        Log.d(Globals.TAG, idToken);
+        Log.d(Globals.TAG, data.toString());
+
+        Log.d(Globals.TAG, "#####################");
+
+        OutputStream os = con.getOutputStream();
+        os.write(data.toString().getBytes("UTF-8"));
+        os.close();
+
+        // Read the response into a string
+        InputStream is = con.getInputStream();
+        String responseString = new Scanner(is, "UTF-8").useDelimiter("\\A").next();
+        is.close();
+
+        // Parse the JSON string and return the notification key
+        JSONObject response = new JSONObject(responseString);
+        return response.getString("notification_key");
+
+    }
+
+    static String addNotificationKeys(
+            String senderId, String name, String localId, String remoteId, String idToken)
+            throws IOException, JSONException {
+        URL url = new URL("https://android.googleapis.com/gcm/googlenotification");
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setDoOutput(true);
+
+        // HTTP request header
+        con.setRequestProperty("project_id", senderId);
+        con.setRequestProperty("Content-Type", "application/json");
+        con.setRequestProperty("Accept", "application/json");
+        con.setRequestMethod("POST");
+        con.connect();
+
+        // HTTP request
+        JSONObject data = new JSONObject();
+        data.put("operation", "add");
+        data.put("notification_key_name", name);
+        data.put("registration_ids", new JSONArray(Arrays.asList(localId, remoteId)));
         data.put("id_token", idToken);
         Log.d(Globals.TAG, "Add Notification KEY");
         Log.d(Globals.TAG, senderId);
@@ -169,4 +214,5 @@ public class FBGroupManager {
             return null;
         }
     }
+
 }

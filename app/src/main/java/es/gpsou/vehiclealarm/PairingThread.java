@@ -7,9 +7,9 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.RemoteMessage;
+import com.google.firebase.functions.FirebaseFunctions;
+
+import org.json.JSONObject;
 
 /**
  * Created by Pedro on 10/11/2017.
@@ -17,11 +17,11 @@ import com.google.firebase.messaging.RemoteMessage;
 
 public class PairingThread extends Thread {
 
-    final long RETRY_INTERVAL=1000;
+    final long RETRY_INTERVAL=10000;
 //    public static Account account=null;
     public static boolean active=false;
     Context mContext=null;
-    String groupId=null;
+//    String groupId=null;
 
     public PairingThread(Context mContext) {
         this.mContext = mContext;
@@ -43,8 +43,8 @@ public class PairingThread extends Thread {
 
         SharedPreferences settings=mContext.getSharedPreferences(Globals.CONFIGURACION, 0);
         String remoteFirebaseId=settings.getString(Globals.REMOTE_FB_REGISTRATION_ID, null);
-//        String localFirebaseId=settings.getString(Globals.FB_REGISTRATION_ID, null);
-        String localFirebaseId=FirebaseInstanceId.getInstance().getToken();
+        String localFirebaseId=settings.getString(Globals.FB_REGISTRATION_ID, null);
+//        String localFirebaseId=FirebaseInstanceId.getInstance().getToken();
         Log.d(Globals.TAG,"remoteFirebaseId:"+remoteFirebaseId);
         Log.d(Globals.TAG,"localFirebaseId:"+localFirebaseId);
         if(localFirebaseId==null) {
@@ -69,7 +69,7 @@ public class PairingThread extends Thread {
                 groupId = FBGroupManager.addNotificationKey(Globals.SENDER_ID, account.name, localFirebaseId, idToken);
                 FBGroupManager.addNotificationKey(Globals.SENDER_ID, account.name, remoteFirebaseId, idToken);
             }
-*/
+
             if(groupId==null) {
                 groupId = FBGroupManager.createGroup(mContext, localFirebaseId, remoteFirebaseId);
 
@@ -79,19 +79,29 @@ public class PairingThread extends Thread {
                 editor.apply();
             }
 
+
             Log.d(Globals.TAG, "GroupId: "+groupId);
+*/
             Log.d(Globals.TAG, "LocalFirebaseId: "+localFirebaseId);
             Log.d(Globals.TAG, "RemoteFirebaseId: "+remoteFirebaseId);
 
-            FirebaseMessaging fm = FirebaseMessaging.getInstance();
+/*            FirebaseMessaging fm = FirebaseMessaging.getInstance();
             String to = groupId;
             String id = Integer.toString(Globals.msgId.incrementAndGet());
             fm.send(new RemoteMessage.Builder(to)
                     .setMessageId(id)
                     .addData(Globals.P2P_DEST, Globals.P2P_DEST_IN_VEHICLE)
-                    .addData(Globals.P2P_OP, Globals.P2P_OP_SET_GROUP_ID)
+                    .addData(Globals.P2P_OP, Globals.P2P_OP_PAIRING_COMMIT)
                     .addData(Globals.P2P_GROUP_ID, groupId)
                     .build());
+*/
+            FirebaseFunctions mFunctions = FirebaseFunctions.getInstance("europe-west1");
+            JSONObject data=new JSONObject();
+            data.put(Globals.P2P_TO, remoteFirebaseId);
+            data.put(Globals.P2P_DEST, Globals.P2P_DEST_IN_VEHICLE);
+            data.put(Globals.P2P_OP, Globals.P2P_OP_PAIRING_COMMIT);
+            data.put(Globals.P2P_COMMIT_REGISTRATION_ID, localFirebaseId);
+            mFunctions.getHttpsCallable("sendMessage").call(data);
 
             if(Looper.myLooper()==null) {
                 Looper.prepare();

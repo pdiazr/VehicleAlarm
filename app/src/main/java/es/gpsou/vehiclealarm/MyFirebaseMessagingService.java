@@ -10,12 +10,14 @@ import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.firebase.messaging.FirebaseMessaging;
+import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.TaskStackBuilder;
+
+import com.google.firebase.functions.FirebaseFunctions;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -23,6 +25,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
+
+import static es.gpsou.vehiclealarm.Globals.TAG;
 
 /**
  * Created by Pedro on 04/02/2017.
@@ -41,7 +45,7 @@ import java.util.Date;
 
     public MyFirebaseMessagingService() {
         super();
-        Log.d(Globals.TAG, "New MyFirebaseMessagingService instance");
+        Log.d(TAG, "New MyFirebaseMessagingService instance");
         ls=LocationSupport.getLocationSupport();
 
         if(broadcastIntent==null) {
@@ -54,7 +58,7 @@ import java.util.Date;
     public void onMessageReceived(RemoteMessage remoteMessage) {
         if (remoteMessage.getData().size() > 0) {
             final JSONObject data = new JSONObject(remoteMessage.getData());
-            Log.d(Globals.TAG, data.toString());
+            Log.d(TAG, data.toString());
 
             try {
                 String dest = data.getString(Globals.P2P_DEST);
@@ -74,6 +78,16 @@ import java.util.Date;
                         }
                     });
                     new PlayAlert(getApplicationContext()).start();
+                    return;
+                } else if(op.compareTo(Globals.P2P_OP_REPLACE_REGISTRATION_ID) == 0) {
+                    String oldRemoteFirebaseId=data.getString(Globals.P2P_OLD_FB_REGISTRATION_ID);
+                    String newRemoteFirebaseId=data.getString(Globals.P2P_NEW_FB_REGISTRATION_ID);
+
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString(Globals.REMOTE_FB_REGISTRATION_ID, newRemoteFirebaseId);
+                    editor.apply();
+
+                    return;
                 }
 
                 if (dest.compareTo(Globals.P2P_DEST_IN_VEHICLE) == 0) {
@@ -88,11 +102,11 @@ import java.util.Date;
                         } else if (op.compareTo(Globals.P2P_OP_PARK_RESET) == 0) {
                             ls.opDeactivateGeofence(getApplicationContext());
                             ParkDetectionIntentService.startParkDetection(getApplicationContext());
-                        } else if(op.compareTo(Globals.P2P_OP_SET_GROUP_ID)==0) {
-                            String groupId=data.getString(Globals.P2P_GROUP_ID);
+                        } else if(op.compareTo(Globals.P2P_OP_PAIRING_COMMIT)==0) {
+                            String remoteFirebaseId=data.getString(Globals.P2P_COMMIT_REGISTRATION_ID);
 
-                            FirebaseMessaging fm = FirebaseMessaging.getInstance();
-                            String operation=Globals.P2P_OP_SET_GROUP_ID_RESULT;
+                            String operation=Globals.P2P_OP_PAiRING_COMMIT_RESULT;
+/*                            FirebaseMessaging fm = FirebaseMessaging.getInstance();
                             String id = Integer.toString(Globals.msgId.incrementAndGet());
                             RemoteMessage.Builder mRemoteMessage=new RemoteMessage.Builder(groupId);
                             fm.send(mRemoteMessage.setMessageId(id)
@@ -100,6 +114,20 @@ import java.util.Date;
                                     .addData(Globals.P2P_OP, operation)
                                     .setTtl(3600)
                                     .build());
+  */
+                            FirebaseFunctions mFunctions = FirebaseFunctions.getInstance("europe-west1");
+                            JSONObject dataOut=new JSONObject();
+                            try {
+                                dataOut.put(Globals.P2P_TO, remoteFirebaseId);
+                                dataOut.put(Globals.P2P_TTL, "3600");
+                                dataOut.put(Globals.P2P_DEST, Globals.P2P_DEST_MONITOR);
+                                dataOut.put(Globals.P2P_OP, operation);
+                                Log.d(TAG, dataOut.toString());
+                            } catch (JSONException e) {
+                                return;
+                            }
+                            mFunctions.getHttpsCallable("sendMessage").call(dataOut);
+
                         } else if(op.compareTo(Globals.P2P_OP_AUDIO_REQ)==0) {
                             String remoteReceived=data.getString(Globals.P2P_SDP);
                             String stunServer=data.getString(Globals.P2P_STUN_SERVER);
@@ -117,8 +145,8 @@ import java.util.Date;
                                 startService(intent);
                             }
 
-                            String to=settings.getString(Globals.FB_GROUP_ID, null);
-                            FirebaseMessaging fm = FirebaseMessaging.getInstance();
+                            String to=settings.getString(Globals.REMOTE_FB_REGISTRATION_ID, null);
+/*                            FirebaseMessaging fm = FirebaseMessaging.getInstance();
                             String id = Integer.toString(Globals.msgId.incrementAndGet());
                             RemoteMessage.Builder mRemoteMessage=new RemoteMessage.Builder(to);
                             fm.send(mRemoteMessage.setMessageId(id)
@@ -127,7 +155,19 @@ import java.util.Date;
                                     .addData(Globals.P2P_SDP, SDPstr)
                                     .setTtl(3600)
                                     .build());
-
+*/
+                            FirebaseFunctions mFunctions = FirebaseFunctions.getInstance("europe-west1");
+                            JSONObject dataOut=new JSONObject();
+                            try {
+                                dataOut.put(Globals.P2P_TO, to);
+                                dataOut.put(Globals.P2P_TTL, "3600");
+                                dataOut.put(Globals.P2P_DEST, Globals.P2P_DEST_MONITOR);
+                                dataOut.put(Globals.P2P_OP, Globals.P2P_OP_AUDIO_RESP);
+                                dataOut.put(Globals.P2P_SDP, SDPstr);
+                            } catch (JSONException e) {
+                                return;
+                            }
+                            mFunctions.getHttpsCallable("sendMessage").call(dataOut);
                         } else if(op.compareTo(Globals.P2P_OP_STOP_AUDIO)==0) {
                             UDPLinkMgr mUDPLinkMgr=UDPLinkMgr.getInstance();
                             mUDPLinkMgr.stopAudio();
@@ -135,15 +175,15 @@ import java.util.Date;
                             startActivity(new Intent(this, VehicleActivity.class)
                                     .putExtra(Globals.SWITCH_MONITORING, true).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
                         }
-                    } else if (op.compareTo(Globals.P2P_OP_SET_GROUP_ID) == 0 && mode.compareTo(Globals.NULL) == 0) {
+                    } else if (op.compareTo(Globals.P2P_OP_PAIRING_COMMIT) == 0 && mode.compareTo(Globals.NULL) == 0) {
                         SharedPreferences.Editor editor = settings.edit();
-                        String groupId=data.getString(Globals.P2P_GROUP_ID);
-                        editor.putString(Globals.FB_GROUP_ID, groupId);
+                        String remoteFirebaseId=data.getString(Globals.P2P_COMMIT_REGISTRATION_ID);
+//                        editor.putString(Globals.FB_GROUP_ID, groupId);
                         editor.putString(Globals.APP_MODE, Globals.IN_VEHICLE_MODE);
                         editor.apply();
 
-                        FirebaseMessaging fm = FirebaseMessaging.getInstance();
-                        String operation=Globals.P2P_OP_SET_GROUP_ID_RESULT;
+                        String operation=Globals.P2P_OP_PAiRING_COMMIT_RESULT;
+/*                        FirebaseMessaging fm = FirebaseMessaging.getInstance();
                         String id = Integer.toString(Globals.msgId.incrementAndGet());
                         RemoteMessage.Builder mRemoteMessage=new RemoteMessage.Builder(groupId);
                         fm.send(mRemoteMessage.setMessageId(id)
@@ -151,6 +191,18 @@ import java.util.Date;
                                 .addData(Globals.P2P_OP, operation)
                                 .setTtl(3600)
                                 .build());
+*/
+                        FirebaseFunctions mFunctions = FirebaseFunctions.getInstance("europe-west1");
+                        JSONObject dataOut=new JSONObject();
+                        try {
+                            dataOut.put(Globals.P2P_TO, remoteFirebaseId);
+                            dataOut.put(Globals.P2P_TTL, "3600");
+                            dataOut.put(Globals.P2P_DEST, Globals.P2P_DEST_MONITOR);
+                            dataOut.put(Globals.P2P_OP, operation);
+                        } catch (JSONException e) {
+                            return;
+                        }
+                        mFunctions.getHttpsCallable("sendMessage").call(dataOut);
 
                         Intent intent = new Intent(this, VehicleActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -188,7 +240,7 @@ import java.util.Date;
                                             try {
                                                 ShowNotification(Globals.SENSOR_ALARM, data.getString(Globals.P2P_TIMESTAMP));
                                             } catch (JSONException e) {
-                                                Log.d(Globals.TAG, "Excepción en parseo de estructura JSON");
+                                                Log.d(TAG, "Excepción en parseo de estructura JSON");
                                             }
                                         }
                                     }
@@ -227,7 +279,7 @@ import java.util.Date;
                                             try {
                                                 ShowNotification(Globals.GEOFENCE_TRANSITION, data.getString(Globals.P2P_TIMESTAMP));
                                             } catch (JSONException e) {
-                                                Log.d(Globals.TAG, "Excepción en parseo de estructura JSON");
+                                                Log.d(TAG, "Excepción en parseo de estructura JSON");
                                             }
                                         }
                                     }
@@ -268,7 +320,7 @@ import java.util.Date;
                                             try {
                                                 ShowNotification(Globals.GET_LOCATION_RESULT, data.getString(Globals.P2P_TIMESTAMP));
                                             } catch (JSONException e) {
-                                                Log.d(Globals.TAG, "Excepción en parseo de estructura JSON");
+                                                Log.d(TAG, "Excepción en parseo de estructura JSON");
                                             }
                                         }
                                     }
@@ -371,18 +423,28 @@ import java.util.Date;
                                 });
 
                             }
-                        } else if(op.compareTo(Globals.P2P_OP_REPLACE_REGISTRATION_ID)==0) {
+/*                        } else if(op.compareTo(Globals.P2P_OP_REPLACE_REGISTRATION_ID)==0) {
                             try {
                                 FBGroupManager.replaceFirebaseId(getApplicationContext(), data.getString(Globals.P2P_OLD_FB_REGISTRATION_ID), data.getString(Globals.P2P_NEW_FB_REGISTRATION_ID));
                             } catch(Exception e) {
                                 e.printStackTrace();
                             }
+*/
                         } else if(op.compareTo(Globals.P2P_OP_REMOVE_REGISTRATION_ID)==0) {
-                            try {
+
+                            Handler mainHandler = new Handler(getMainLooper());
+                            mainHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(), R.string.MFMS_remote_reset, Toast.LENGTH_SHORT).show();
+                                }
+                            });
+/*                            try {
                                 FBGroupManager.removeFirebaseId(getApplicationContext(), data.getString(Globals.P2P_FB_REGISTRATION_ID));
                             } catch(Exception e) {
                                 e.printStackTrace();
                             }
+*/
                         } else if(op.compareTo(Globals.P2P_OP_AUDIO_RESP)==0) {
                             String remoteReceived=data.getString(Globals.P2P_SDP);
 
@@ -415,7 +477,7 @@ import java.util.Date;
                             broadcastIntent.putExtra(Globals.P2P_OP, Globals.MONITORING);
                             sendOrderedBroadcast(broadcastIntent, null);
                         }
-                    } else if (op.compareTo(Globals.P2P_OP_SET_GROUP_ID_RESULT) == 0 && mode.compareTo(Globals.NULL) == 0) {
+                    } else if (op.compareTo(Globals.P2P_OP_PAiRING_COMMIT_RESULT) == 0 && mode.compareTo(Globals.NULL) == 0) {
                         SharedPreferences.Editor editor=settings.edit();
                         editor.putString(Globals.APP_MODE, Globals.MONITORING_MODE);
                         editor.apply();
@@ -448,11 +510,13 @@ import java.util.Date;
 
     @Override
     public void onSendError(String s, Exception e) {
+        Log.d(TAG, "ERROR AL ENVIAR EL MENSAJE: "+e.getMessage());
         super.onSendError(s, e);
     }
 
     @Override
     public void onMessageSent(String s) {
+        Log.d(TAG, "MENSAJE ENVIADO: "+s);
         super.onMessageSent(s);
     }
 
@@ -464,7 +528,7 @@ import java.util.Date;
         String appMode=settings.getString(Globals.APP_MODE, Globals.NULL);
 
         if(appMode.compareTo(Globals.MONITORING_MODE) == 0) {
-            Log.d(Globals.TAG, "##################### SAVING STATE ####################");
+            Log.d(TAG, "##################### SAVING STATE ####################");
 
             settings=getSharedPreferences(Globals.SAVED_STATUS, 0);
             SharedPreferences.Editor editor = settings.edit();
@@ -497,6 +561,78 @@ import java.util.Date;
                 editor.putBoolean("TRACKING_ACTIVE", vds.trackingActive);
             editor.apply();
         }
+    }
+
+    @Override
+    public void onNewToken(@NonNull String s) {
+        super.onNewToken(s);
+
+        // Get updated InstanceID token.
+        String refreshedToken = s;
+
+        SharedPreferences settings=getSharedPreferences(Globals.CONFIGURACION, 0);
+        String mode=settings.getString(Globals.APP_MODE, Globals.NULL);
+        String currentToken=settings.getString(Globals.FB_REGISTRATION_ID, null);
+        String remoteFirebaseId=settings.getString(Globals.REMOTE_FB_REGISTRATION_ID, null);
+
+        SharedPreferences.Editor editor=settings.edit();
+        editor.putString(Globals.FB_REGISTRATION_ID, refreshedToken);
+        editor.apply();
+
+        if(mode.compareTo(Globals.MONITORING_MODE)==0 || mode.compareTo(Globals.IN_VEHICLE_MODE)==0) {
+/*            String groupId=settings.getString(Globals.P2P_GROUP_ID, null);
+
+            FirebaseMessaging fm = FirebaseMessaging.getInstance();
+            String operation=Globals.P2P_OP_REPLACE_REGISTRATION_ID;
+            String id = Integer.toString(Globals.msgId.incrementAndGet());
+            RemoteMessage.Builder mRemoteMessage=new RemoteMessage.Builder(groupId);
+            fm.send(mRemoteMessage.setMessageId(id)
+                    .addData(Globals.P2P_DEST, Globals.P2P_DEST_MONITOR)
+                    .addData(Globals.P2P_OP, operation)
+                    .addData(Globals.P2P_OLD_FB_REGISTRATION_ID, currentToken)
+                    .addData(Globals.P2P_NEW_FB_REGISTRATION_ID, refreshedToken)
+                    .setTtl(3600)
+                    .build());
+ */
+            String to=remoteFirebaseId;
+
+            FirebaseFunctions mFunctions = FirebaseFunctions.getInstance("europe-west1");
+            JSONObject data=new JSONObject();
+            try {
+                data.put(Globals.P2P_TO, to);
+                data.put(Globals.P2P_TTL, "3600");
+                data.put(Globals.P2P_DEST, Globals.P2P_DEST_MONITOR);
+                data.put(Globals.P2P_OP, Globals.P2P_OP_REPLACE_REGISTRATION_ID);
+                data.put(Globals.P2P_OLD_FB_REGISTRATION_ID, currentToken);
+                data.put(Globals.P2P_NEW_FB_REGISTRATION_ID, refreshedToken);
+            } catch (JSONException e) {
+                return;
+            }
+            mFunctions.getHttpsCallable("sendMessage").call(data);
+        }
+
+/*        if(mode.compareTo(Globals.MONITORING_MODE)==0) {
+            try {
+                FBGroupManager.replaceFirebaseId(getApplicationContext(), currentToken, refreshedToken);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        } else if(mode.compareTo(Globals.IN_VEHICLE_MODE)==0) {
+            String groupId=settings.getString(Globals.P2P_GROUP_ID, null);
+
+            FirebaseMessaging fm = FirebaseMessaging.getInstance();
+            String operation=Globals.P2P_OP_REPLACE_REGISTRATION_ID;
+            String id = Integer.toString(Globals.msgId.incrementAndGet());
+            RemoteMessage.Builder mRemoteMessage=new RemoteMessage.Builder(groupId);
+            fm.send(mRemoteMessage.setMessageId(id)
+                    .addData(Globals.P2P_DEST, Globals.P2P_DEST_MONITOR)
+                    .addData(Globals.P2P_OP, operation)
+                    .addData(Globals.P2P_OLD_FB_REGISTRATION_ID, currentToken)
+                    .addData(Globals.P2P_NEW_FB_REGISTRATION_ID, refreshedToken)
+                    .setTtl(3600)
+                    .build());
+        }
+ */
     }
 
     void ShowNotification(int type, String timestampLong) {

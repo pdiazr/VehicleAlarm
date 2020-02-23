@@ -591,12 +591,7 @@ public class UDPLinkMgr {
         SocketAddress dest = new InetSocketAddress(STUNT_HOST, STUNT_PORT);
         DatagramPacket reqDgram=null;
         DatagramPacket respDgram=new DatagramPacket(receiveData, receiveData.length);
-        try {
-            reqDgram = new DatagramPacket(buff.array(), 28, dest);
-        } catch(SocketException e) {
-            Log.d(Globals.TAG, "Error al crear el datagrama BIND_REQUEST");
-            return(null);
-        }
+        reqDgram = new DatagramPacket(buff.array(), 28, dest);
 
         int retry_count=0;
         do {
@@ -688,12 +683,7 @@ Log.d(Globals.TAG, "PASO 4");
 
                 SocketAddress dest = new InetSocketAddress(host, port);
                 DatagramPacket dgram=null;
-                try {
-                    dgram = new DatagramPacket(audioBuffer, AUDIO_BUFFER_SIZE, dest);
-                }catch(SocketException e) {
-                    Log.d(Globals.TAG, "Error al crear datagreama UDP");
-                    return;
-                }
+                dgram = new DatagramPacket(audioBuffer, AUDIO_BUFFER_SIZE, dest);
 
                 int bytesRead;
                 continueAudio = true;

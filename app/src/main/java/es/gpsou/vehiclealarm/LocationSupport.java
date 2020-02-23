@@ -10,11 +10,12 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.BatteryManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -29,8 +30,10 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.RemoteMessage;
+import com.google.firebase.functions.FirebaseFunctions;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -204,10 +207,10 @@ public class LocationSupport implements
 
         int batteryPct=getBatteryLevel();
 
-        FirebaseMessaging fm = FirebaseMessaging.getInstance();
         SharedPreferences settings=context.getSharedPreferences(Globals.CONFIGURACION, 0);
-        String to=settings.getString(Globals.FB_GROUP_ID, null);
+        String to=settings.getString(Globals.REMOTE_FB_REGISTRATION_ID, null);
 
+/*        FirebaseMessaging fm = FirebaseMessaging.getInstance();
         String id = Integer.toString(Globals.msgId.incrementAndGet());
         fm.send(new RemoteMessage.Builder(to)
                 .setMessageId(id)
@@ -219,6 +222,23 @@ public class LocationSupport implements
                 .addData(Globals.P2P_BATTERY, String.valueOf(batteryPct))
                 .setTtl(3600)
                 .build());
+*/
+        FirebaseFunctions mFunctions = FirebaseFunctions.getInstance("europe-west1");
+        JSONObject data=new JSONObject();
+        try {
+            data.put(Globals.P2P_TO, to);
+            data.put(Globals.P2P_TTL, "3600");
+            data.put(Globals.P2P_DEST, Globals.P2P_DEST_MONITOR);
+            data.put(Globals.P2P_OP, Globals.P2P_OP_GEOFENCING_ALERT);
+            data.put(Globals.P2P_LATITUDE, String.valueOf(latitude));
+            data.put(Globals.P2P_LONGITUDE, String.valueOf(longitude));
+            data.put(Globals.P2P_TIMESTAMP, String.valueOf(ts));
+            data.put(Globals.P2P_BATTERY, String.valueOf(batteryPct));
+        } catch (JSONException ex) {
+            return;
+        }
+        mFunctions.getHttpsCallable("sendMessage").call(data);
+
     }
 
     public void parkDetectionCheck(Context c) {
@@ -299,45 +319,72 @@ public class LocationSupport implements
     }
 
     private void returnLocation(Location location, String operation, boolean permissionFailled) {
-        FirebaseMessaging fm = FirebaseMessaging.getInstance();
+/*        FirebaseMessaging fm = FirebaseMessaging.getInstance(); */
+        FirebaseFunctions mFunctions = FirebaseFunctions.getInstance("europe-west1");
         SharedPreferences settings=context.getSharedPreferences(Globals.CONFIGURACION, 0);
-        String to=settings.getString(Globals.FB_GROUP_ID, null);
+        String to=settings.getString(Globals.REMOTE_FB_REGISTRATION_ID, null);
 
         int batteryPct=getBatteryLevel();
         int parkingStatus=getParkingStatus();
 
 //        String operation=updateLocation?Globals.P2P_OP_LOCATION_UPDATE:Globals.P2P_OP_GET_LOCATION_RESULT;
 
-        String id = Integer.toString(Globals.msgId.incrementAndGet());
+/*        String id = Integer.toString(Globals.msgId.incrementAndGet());
         RemoteMessage.Builder mRemoteMessage=new RemoteMessage.Builder(to);
         mRemoteMessage.setMessageId(id)
                 .addData(Globals.P2P_DEST, Globals.P2P_DEST_MONITOR)
                 .addData(Globals.P2P_OP, operation)
                 .setTtl(3600);
+*/
+        JSONObject data=new JSONObject();
+        try {
+            data.put(Globals.P2P_TO, to);
+            data.put(Globals.P2P_TTL, "3600");
+            data.put(Globals.P2P_DEST, Globals.P2P_DEST_MONITOR);
+            data.put(Globals.P2P_OP, operation);
 
-        if(permissionFailled) {
-            mRemoteMessage.addData(Globals.P2P_RESULT, PERMISSION_ERROR);
-            trackingActive=false;
-        } else if (location != null || prevLocation != null) {
-            if(location==null)
-                location=prevLocation;
 
-            mRemoteMessage.addData(Globals.P2P_RESULT, RESULT_OK);
+            if(permissionFailled) {
+                /*            mRemoteMessage.addData(Globals.P2P_RESULT, PERMISSION_ERROR); */
+                data.put(Globals.P2P_RESULT, PERMISSION_ERROR);
+                trackingActive=false;
+            } else if (location != null || prevLocation != null) {
+                if(location==null)
+                    location=prevLocation;
+
+/*            mRemoteMessage.addData(Globals.P2P_RESULT, RESULT_OK);
             mRemoteMessage.addData(Globals.P2P_LATITUDE, String.valueOf(location.getLatitude()));
             mRemoteMessage.addData(Globals.P2P_LONGITUDE, String.valueOf(location.getLongitude()));
             mRemoteMessage.addData(Globals.P2P_BATTERY, String.valueOf(batteryPct));
             mRemoteMessage.addData(Globals.P2P_PARKING, String.valueOf(parkingStatus));
             mRemoteMessage.addData(Globals.P2P_TIMESTAMP, String.valueOf(location.getTime()));
-            if(parkingStatus > 0) {
-                mRemoteMessage.addData(Globals.P2P_LATITUDE_PARK, String.valueOf(parkLocation.getLatitude()));
+*/
+                data.put(Globals.P2P_RESULT, RESULT_OK);
+                data.put(Globals.P2P_LATITUDE, String.valueOf(location.getLatitude()));
+                data.put(Globals.P2P_LONGITUDE, String.valueOf(location.getLongitude()));
+                data.put(Globals.P2P_BATTERY, String.valueOf(batteryPct));
+                data.put(Globals.P2P_PARKING, String.valueOf(parkingStatus));
+                data.put(Globals.P2P_TIMESTAMP, String.valueOf(location.getTime()));
+                if(parkingStatus > 0) {
+/*                mRemoteMessage.addData(Globals.P2P_LATITUDE_PARK, String.valueOf(parkLocation.getLatitude()));
                 mRemoteMessage.addData(Globals.P2P_LONGITUDE_PARK, String.valueOf(parkLocation.getLongitude()));
-            }
-        } else {
-            mRemoteMessage.addData(Globals.P2P_RESULT, ABSENT_DATA);
-            mRemoteMessage.addData(Globals.P2P_BATTERY, String.valueOf(batteryPct));
-        }
+*/
+                    data.put(Globals.P2P_LATITUDE_PARK, String.valueOf(parkLocation.getLatitude()));
+                    data.put(Globals.P2P_LONGITUDE_PARK, String.valueOf(parkLocation.getLongitude()));
 
-        fm.send(mRemoteMessage.build());
+                }
+            } else {
+/*            mRemoteMessage.addData(Globals.P2P_RESULT, ABSENT_DATA);
+            mRemoteMessage.addData(Globals.P2P_BATTERY, String.valueOf(batteryPct));
+*/
+                data.put(Globals.P2P_RESULT, ABSENT_DATA);
+                data.put(Globals.P2P_BATTERY, String.valueOf(batteryPct));
+            }
+        } catch (JSONException e) {
+            return;
+        }
+/*        fm.send(mRemoteMessage.build()); */
+        mFunctions.getHttpsCallable("sendMessage").call(data);
     }
 
     private void buildGeofence() {
@@ -557,11 +604,12 @@ public class LocationSupport implements
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(Globals.TAG, "OnConnectionFailed triggered");
-        FirebaseMessaging fm = FirebaseMessaging.getInstance();
+/*        FirebaseMessaging fm = FirebaseMessaging.getInstance(); */
+        FirebaseFunctions mFunctions = FirebaseFunctions.getInstance("europe-west1");
         SharedPreferences settings=context.getSharedPreferences(Globals.CONFIGURACION, 0);
-        String to=settings.getString(Globals.FB_GROUP_ID, null);
+        String to=settings.getString(Globals.REMOTE_FB_REGISTRATION_ID, null);
 
-        String id = Integer.toString(Globals.msgId.incrementAndGet());
+/*        String id = Integer.toString(Globals.msgId.incrementAndGet());
         fm.send(new RemoteMessage.Builder(to)
                 .setMessageId(id)
                 .addData(Globals.P2P_DEST, Globals.P2P_DEST_MONITOR)
@@ -569,6 +617,18 @@ public class LocationSupport implements
                 .addData(Globals.P2P_RESULT, GOOGLE_API_CONNECTION_ERROR)
                 .setTtl(3600)
                 .build());
+*/
+        JSONObject data=new JSONObject();
+        try {
+            data.put(Globals.P2P_TO, to);
+            data.put(Globals.P2P_TTL, "3600");
+            data.put(Globals.P2P_DEST, Globals.P2P_DEST_MONITOR);
+            data.put(Globals.P2P_OP, Globals.P2P_OP_GET_LOCATION_RESULT);
+            data.put(Globals.P2P_RESULT, GOOGLE_API_CONNECTION_ERROR);
+        } catch (JSONException e) {
+            return;
+        }
+        mFunctions.getHttpsCallable("sendMessage").call(data);
     }
 
 }

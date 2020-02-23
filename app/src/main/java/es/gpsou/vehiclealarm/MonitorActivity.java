@@ -12,10 +12,6 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,8 +24,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.RemoteMessage;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.functions.FirebaseFunctions;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -137,37 +140,61 @@ public class MonitorActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         Intent intent=null;
         final SharedPreferences settings=getSharedPreferences(Globals.CONFIGURACION, 0);
-        FirebaseMessaging fm = FirebaseMessaging.getInstance();
-        String groupId, to, id;
+/*        FirebaseMessaging fm = FirebaseMessaging.getInstance(); */
+        FirebaseFunctions mFunctions = FirebaseFunctions.getInstance("europe-west1");
+        JSONObject data=null;
+        String remoteFirebaseId, to, id;
 
         switch (item.getItemId()) {
             case R.id.monitor_menu_refresh:
-                groupId=settings.getString(Globals.FB_GROUP_ID, null);
+                remoteFirebaseId=settings.getString(Globals.REMOTE_FB_REGISTRATION_ID, null);
 
-                to = groupId;
-                id = Integer.toString(Globals.msgId.incrementAndGet());
+                to = remoteFirebaseId;
+/*                id = Integer.toString(Globals.msgId.incrementAndGet());
                 fm.send(new RemoteMessage.Builder(to)
                         .setMessageId(id)
                         .addData(Globals.P2P_DEST, Globals.P2P_DEST_IN_VEHICLE)
                         .addData(Globals.P2P_OP, Globals.P2P_OP_GET_LOCATION)
                         .setTtl(3600)
                         .build());
+*/
+                data=new JSONObject();
+                try {
+                    data.put(Globals.P2P_TO, to);
+                    data.put(Globals.P2P_TTL, "3600");
+                    data.put(Globals.P2P_DEST, Globals.P2P_DEST_IN_VEHICLE);
+                    data.put(Globals.P2P_OP, Globals.P2P_OP_GET_LOCATION);
+                } catch (JSONException e) {
+                    return true;
+                }
+                mFunctions.getHttpsCallable("sendMessage").call(data);
 
                 Toast.makeText(getApplicationContext(), getString(R.string.monitor_getLocation_toast), Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.monitor_menu_tracking:
-                fm = FirebaseMessaging.getInstance();
+/*                fm = FirebaseMessaging.getInstance(); */
 
-                groupId=settings.getString(Globals.FB_GROUP_ID, null);
+                remoteFirebaseId=settings.getString(Globals.REMOTE_FB_REGISTRATION_ID, null);
 
-                to = groupId;
-                id = Integer.toString(Globals.msgId.incrementAndGet());
+                to = remoteFirebaseId;
+/*                id = Integer.toString(Globals.msgId.incrementAndGet());
                 fm.send(new RemoteMessage.Builder(to)
                         .setMessageId(id)
                         .addData(Globals.P2P_DEST, Globals.P2P_DEST_IN_VEHICLE)
                         .addData(Globals.P2P_OP, Globals.P2P_OP_ACTIVATE_TRACKING)
                         .setTtl(3600)
                         .build());
+*/
+                data=new JSONObject();
+                try {
+                    data.put(Globals.P2P_TO, to);
+                    data.put(Globals.P2P_TTL, "3600");
+                    data.put(Globals.P2P_DEST, Globals.P2P_DEST_IN_VEHICLE);
+                    data.put(Globals.P2P_OP, Globals.P2P_OP_ACTIVATE_TRACKING);
+                } catch (JSONException e) {
+                    return true;
+                }
+                mFunctions.getHttpsCallable("sendMessage").call(data);
 
                 Toast.makeText(getApplicationContext(), getString(R.string.monitor_activateTracking_toast), Toast.LENGTH_SHORT).show();
                 return true;
@@ -185,12 +212,13 @@ public class MonitorActivity extends AppCompatActivity {
                         new Thread() {
                             @Override
                             public void run() {
-                                try {
+/*                                try {
                                     FBGroupManager.removeFirebaseId(MonitorActivity.this, settings.getString(Globals.REMOTE_FB_REGISTRATION_ID, null));
                                     FBGroupManager.removeFirebaseId(MonitorActivity.this, settings.getString(Globals.FB_REGISTRATION_ID, null));
                                 } catch(Exception e) {
                                     e.printStackTrace();
                                 }
+*/
 
                                 Log.d(Globals.TAG, "##################### RESETTING STATE ON ACTIVITY ####################");
 
@@ -219,7 +247,7 @@ public class MonitorActivity extends AppCompatActivity {
 
                         SharedPreferences.Editor editor=settings.edit();
                         editor.putString(Globals.APP_MODE, Globals.NULL);
-                        editor.putString(Globals.FB_GROUP_ID, null);
+//                        editor.putString(Globals.FB_GROUP_ID, null);
                         editor.apply();
 
                         Intent intent=new Intent(MonitorActivity.this, MainActivity.class);
@@ -237,10 +265,10 @@ public class MonitorActivity extends AppCompatActivity {
 
                 return true;
             case R.id.monitor_menu_test:
-                groupId=settings.getString(Globals.FB_GROUP_ID, null);
+                remoteFirebaseId=settings.getString(Globals.REMOTE_FB_REGISTRATION_ID, null);
 
-                to = groupId;
-                id = Integer.toString(Globals.msgId.incrementAndGet());
+                to = remoteFirebaseId;
+/*                id = Integer.toString(Globals.msgId.incrementAndGet());
                 fm.send(new RemoteMessage.Builder(to)
                         .setMessageId(id)
                         .addData(Globals.P2P_DEST, Globals.P2P_DEST_IN_VEHICLE)
@@ -248,7 +276,18 @@ public class MonitorActivity extends AppCompatActivity {
                         .addData(Globals.P2P_TXT, getString(R.string.monitor_test_string))
                         .setTtl(3600)
                         .build());
-
+*/
+                data=new JSONObject();
+                try {
+                    data.put(Globals.P2P_TO, to);
+                    data.put(Globals.P2P_TTL, "3600");
+                    data.put(Globals.P2P_DEST, Globals.P2P_DEST_IN_VEHICLE);
+                    data.put(Globals.P2P_OP, Globals.P2P_OP_TEST);
+                    data.put(Globals.P2P_TXT, getString(R.string.monitor_test_string));
+                } catch (JSONException e) {
+                    return true;
+                }
+                mFunctions.getHttpsCallable("sendMessage").call(data);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -277,19 +316,31 @@ public class MonitorActivity extends AppCompatActivity {
     }
 
     public void deActivateTracking(View v) {
-        FirebaseMessaging fm = FirebaseMessaging.getInstance();
+/*        FirebaseMessaging fm = FirebaseMessaging.getInstance(); */
+        FirebaseFunctions mFunctions = FirebaseFunctions.getInstance("europe-west1");
 
         SharedPreferences settings=getSharedPreferences(Globals.CONFIGURACION, 0);
-        String groupId=settings.getString(Globals.FB_GROUP_ID, null);
+        String remoteFirebaseId=settings.getString(Globals.REMOTE_FB_REGISTRATION_ID, null);
 
-        String to = groupId;
-        String id = Integer.toString(Globals.msgId.incrementAndGet());
+        String to = remoteFirebaseId;
+/*        String id = Integer.toString(Globals.msgId.incrementAndGet());
         fm.send(new RemoteMessage.Builder(to)
                 .setMessageId(id)
                 .addData(Globals.P2P_DEST, Globals.P2P_DEST_IN_VEHICLE)
                 .addData(Globals.P2P_OP, Globals.P2P_OP_DEACTIVATE_TRACKING)
                 .setTtl(3600)
                 .build());
+*/
+        JSONObject data=new JSONObject();
+        try {
+            data.put(Globals.P2P_TO, to);
+            data.put(Globals.P2P_TTL, "3600");
+            data.put(Globals.P2P_DEST, Globals.P2P_DEST_IN_VEHICLE);
+            data.put(Globals.P2P_OP, Globals.P2P_OP_DEACTIVATE_TRACKING);
+        } catch (JSONException e) {
+            return;
+        }
+        mFunctions.getHttpsCallable("sendMessage").call(data);
 
         VehicleDeviceStatus vds=Globals.vehicleDeviceStatus;
         vds.trackingActive=false;
@@ -330,19 +381,31 @@ public class MonitorActivity extends AppCompatActivity {
     }
 
     public void parkReset(View v) {
-        FirebaseMessaging fm = FirebaseMessaging.getInstance();
+/*        FirebaseMessaging fm = FirebaseMessaging.getInstance(); */
+        FirebaseFunctions mFunctions = FirebaseFunctions.getInstance("europe-west1");
 
         SharedPreferences settings=getSharedPreferences(Globals.CONFIGURACION, 0);
-        String groupId=settings.getString(Globals.FB_GROUP_ID, null);
+        String remoteFirebaseId=settings.getString(Globals.REMOTE_FB_REGISTRATION_ID, null);
 
-        String to = groupId;
-        String id = Integer.toString(Globals.msgId.incrementAndGet());
+        String to = remoteFirebaseId;
+/*        String id = Integer.toString(Globals.msgId.incrementAndGet());
         fm.send(new RemoteMessage.Builder(to)
                 .setMessageId(id)
                 .addData(Globals.P2P_DEST, Globals.P2P_DEST_IN_VEHICLE)
                 .addData(Globals.P2P_OP, Globals.P2P_OP_PARK_RESET)
                 .setTtl(3600)
                 .build());
+*/
+        JSONObject data=new JSONObject();
+        try {
+            data.put(Globals.P2P_TO, to);
+            data.put(Globals.P2P_TTL, "3600");
+            data.put(Globals.P2P_DEST, Globals.P2P_DEST_IN_VEHICLE);
+            data.put(Globals.P2P_OP, Globals.P2P_OP_PARK_RESET);
+        } catch (JSONException e) {
+            return;
+        }
+        mFunctions.getHttpsCallable("sendMessage").call(data);
 
         ImageView parking=(ImageView)findViewById(R.id.parking);
         parking.setVisibility(View.INVISIBLE);
@@ -549,9 +612,9 @@ public class MonitorActivity extends AppCompatActivity {
                     });
 
                     SharedPreferences settings = getSharedPreferences(Globals.CONFIGURACION, 0);
-                    String to = settings.getString(Globals.FB_GROUP_ID, null);
+                    String to = settings.getString(Globals.REMOTE_FB_REGISTRATION_ID, null);
 
-                    FirebaseMessaging fm = FirebaseMessaging.getInstance();
+/*                    FirebaseMessaging fm = FirebaseMessaging.getInstance();
                     String id = Integer.toString(Globals.msgId.incrementAndGet());
                     RemoteMessage.Builder mRemoteMessage = new RemoteMessage.Builder(to);
                     fm.send(mRemoteMessage.setMessageId(id)
@@ -561,6 +624,20 @@ public class MonitorActivity extends AppCompatActivity {
                             .addData(Globals.P2P_STUN_SERVER, stunServer)
                             .setTtl(3600)
                             .build());
+*/
+                    FirebaseFunctions mFunctions = FirebaseFunctions.getInstance("europe-west1");
+                    JSONObject data=new JSONObject();
+                    try {
+                        data.put(Globals.P2P_TO, to);
+                        data.put(Globals.P2P_TTL, "3600");
+                        data.put(Globals.P2P_DEST, Globals.P2P_DEST_IN_VEHICLE);
+                        data.put(Globals.P2P_OP, Globals.P2P_OP_AUDIO_REQ);
+                        data.put(Globals.P2P_SDP, SDPstr);
+                        data.put(Globals.P2P_STUN_SERVER, stunServer);
+                    } catch (JSONException e) {
+                        return;
+                    }
+                    mFunctions.getHttpsCallable("sendMessage").call(data);
                 }
             }.start();
         } else {
@@ -571,9 +648,9 @@ public class MonitorActivity extends AppCompatActivity {
             mUDPLinkMgr.stopAudio();
 
             SharedPreferences settings = getSharedPreferences(Globals.CONFIGURACION, 0);
-            String to = settings.getString(Globals.FB_GROUP_ID, null);
+            String to = settings.getString(Globals.REMOTE_FB_REGISTRATION_ID, null);
 
-            FirebaseMessaging fm = FirebaseMessaging.getInstance();
+/*            FirebaseMessaging fm = FirebaseMessaging.getInstance();
             String id = Integer.toString(Globals.msgId.incrementAndGet());
             RemoteMessage.Builder mRemoteMessage = new RemoteMessage.Builder(to);
             fm.send(mRemoteMessage.setMessageId(id)
@@ -581,6 +658,18 @@ public class MonitorActivity extends AppCompatActivity {
                     .addData(Globals.P2P_OP, Globals.P2P_OP_STOP_AUDIO)
                     .setTtl(3600)
                     .build());
+*/
+            FirebaseFunctions mFunctions = FirebaseFunctions.getInstance("europe-west1");
+            JSONObject data=new JSONObject();
+            try {
+                data.put(Globals.P2P_TO, to);
+                data.put(Globals.P2P_TTL, "3600");
+                data.put(Globals.P2P_DEST, Globals.P2P_DEST_IN_VEHICLE);
+                data.put(Globals.P2P_OP, Globals.P2P_OP_STOP_AUDIO);
+            } catch (JSONException e) {
+                return;
+            }
+            mFunctions.getHttpsCallable("sendMessage").call(data);
         }
     }
 
@@ -595,9 +684,9 @@ public class MonitorActivity extends AppCompatActivity {
         });
 
         SharedPreferences settings = getSharedPreferences(Globals.CONFIGURACION, 0);
-        String to = settings.getString(Globals.FB_GROUP_ID, null);
+        String to = settings.getString(Globals.REMOTE_FB_REGISTRATION_ID, null);
 
-        FirebaseMessaging fm = FirebaseMessaging.getInstance();
+/*        FirebaseMessaging fm = FirebaseMessaging.getInstance();
         String id = Integer.toString(Globals.msgId.incrementAndGet());
         RemoteMessage.Builder mRemoteMessage = new RemoteMessage.Builder(to);
         fm.send(mRemoteMessage.setMessageId(id)
@@ -605,5 +694,17 @@ public class MonitorActivity extends AppCompatActivity {
                 .addData(Globals.P2P_OP, Globals.P2P_OP_SWITCH_MONITORING)
                 .setTtl(3600)
                 .build());
+*/
+        FirebaseFunctions mFunctions = FirebaseFunctions.getInstance("europe-west1");
+        JSONObject data=new JSONObject();
+        try {
+            data.put(Globals.P2P_TO, to);
+            data.put(Globals.P2P_TTL, "3600");
+            data.put(Globals.P2P_DEST, Globals.P2P_DEST_IN_VEHICLE);
+            data.put(Globals.P2P_OP, Globals.P2P_OP_SWITCH_MONITORING);
+        } catch (JSONException e) {
+            return;
+        }
+        mFunctions.getHttpsCallable("sendMessage").call(data);
     }
 }

@@ -18,11 +18,14 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.SystemClock;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.RemoteMessage;
+import androidx.core.app.NotificationCompat;
+
+import com.google.firebase.functions.FirebaseFunctions;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Date;
 
@@ -196,10 +199,10 @@ public class SensorService extends Service {
                 Log.d(Globals.TAG, "Envío de alarma de movimiento al monitor: " + String.valueOf(diff) + "-" + sensitivity);
 
                 sendTs = ts;
-                FirebaseMessaging fm = FirebaseMessaging.getInstance();
                 SharedPreferences settings = getSharedPreferences(Globals.CONFIGURACION, 0);
-                String to = settings.getString(Globals.FB_GROUP_ID, null);
+                String to = settings.getString(Globals.REMOTE_FB_REGISTRATION_ID, null);
 
+/*                FirebaseMessaging fm = FirebaseMessaging.getInstance();
                 String id = Integer.toString(Globals.msgId.incrementAndGet());
                 fm.send(new RemoteMessage.Builder(to)
                         .setMessageId(id)
@@ -208,6 +211,19 @@ public class SensorService extends Service {
                         .addData(Globals.P2P_TIMESTAMP, String.valueOf(new Date().getTime()))
                         .setTtl(3600)
                         .build());
+*/
+                FirebaseFunctions mFunctions = FirebaseFunctions.getInstance("europe-west1");
+                JSONObject data=new JSONObject();
+                try {
+                    data.put(Globals.P2P_TO, to);
+                    data.put(Globals.P2P_TTL, "3600");
+                    data.put(Globals.P2P_DEST, Globals.P2P_DEST_MONITOR);
+                    data.put(Globals.P2P_OP, Globals.P2P_OP_SENSOR_ALARM);
+                    data.put(Globals.P2P_TIMESTAMP, String.valueOf(new Date().getTime()));
+                } catch (JSONException e) {
+                    return;
+                }
+                mFunctions.getHttpsCallable("sendMessage").call(data);
             }
         }
 

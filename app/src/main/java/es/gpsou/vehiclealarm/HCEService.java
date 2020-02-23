@@ -5,9 +5,8 @@ import android.content.SharedPreferences;
 import android.nfc.cardemulation.HostApduService;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.RequiresApi;
 
-import com.google.firebase.iid.FirebaseInstanceId;
+import androidx.annotation.RequiresApi;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,7 +42,8 @@ public class HCEService extends HostApduService {
             }
 
             String btMac=settings.getString(Globals.BT_MAC, "NULL");
-            String firebaseId = FirebaseInstanceId.getInstance().getToken();
+            String firebaseId = settings.getString(Globals.FB_REGISTRATION_ID, "NULL");
+//            String firebaseId = FirebaseInstanceId.getInstance().getToken();
 
             SharedPreferences.Editor editor=settings.edit();
             editor.putString(Globals.REMOTE_BT_MAC, remoteBtMac);
@@ -126,7 +126,7 @@ Log.d("DEBUGGING","remoteFirebaseId:"+remoteFirebaseId);
             fm.send(new RemoteMessage.Builder(to)
                     .setMessageId(id)
                     .addData(Globals.P2P_DEST, Globals.P2P_DEST_IN_VEHICLE)
-                    .addData(Globals.P2P_OP, Globals.P2P_OP_SET_GROUP_ID)
+                    .addData(Globals.P2P_OP, Globals.P2P_OP_PAIRING_COMMIT)
                     .addData(Globals.P2P_GROUP_ID, groupId)
                     .build());
 

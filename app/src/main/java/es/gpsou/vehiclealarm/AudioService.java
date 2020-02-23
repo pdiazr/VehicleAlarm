@@ -4,7 +4,7 @@ import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 
 
 public class AudioService extends IntentService {

@@ -1,22 +1,20 @@
 package es.gpsou.vehiclealarm;
 
 import android.Manifest;
-import android.accounts.Account;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -148,7 +146,7 @@ public class ConfigureActivity extends AppCompatActivity {
     }
 
     public void configureMonitor(View v) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
+/*            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
 
                 if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.GET_ACCOUNTS)) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -168,6 +166,9 @@ public class ConfigureActivity extends AppCompatActivity {
             } else {
                 startConfigureMonitor();
             }
+*/
+        startConfigureMonitor();
+
     }
 
     private void startConfigureVehicle() {
@@ -203,7 +204,7 @@ public class ConfigureActivity extends AppCompatActivity {
     }
 
     private void startConfigureMonitor() {
-        final Account account=FBGroupManager.getAccount(this);
+/*        final Account account=FBGroupManager.getAccount(this);
 
         if(account==null) {
             Toast.makeText(this, R.string.conf_account_not_available,
@@ -216,7 +217,7 @@ public class ConfigureActivity extends AppCompatActivity {
             SharedPreferences.Editor editor=settings.edit();
             editor.putString(Globals.GOOGLE_ACCOUNT, account.name);
             editor.apply();
-
+*/
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 View hide = findViewById(R.id.separator);
                 hide.setVisibility(View.INVISIBLE);
@@ -237,7 +238,7 @@ public class ConfigureActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, BtClientActivity.class);
                 startActivity(intent);
             }
-        }
+/*        } */
     }
 
     private String getBluetoothMac(final Context context) {

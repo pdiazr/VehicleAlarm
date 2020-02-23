@@ -10,14 +10,15 @@ import android.nfc.tech.IsoDep;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.annotation.RequiresApi;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONException;
@@ -120,8 +121,8 @@ public class NfcVehicleActivity extends AppCompatActivity implements NfcAdapter.
             if(new String(response, Charset.forName("UTF-8")).compareTo(Globals.NFC_SYNC_STRING)==0) {
                 SharedPreferences settings=getSharedPreferences(Globals.CONFIGURACION, 0);
                 String btMac=settings.getString(Globals.BT_MAC, "NULL");
-//                String firebaseId=settings.getString(Globals.FB_REGISTRATION_ID, "NULL");
-                String firebaseId=FirebaseInstanceId.getInstance().getToken();
+                String firebaseId=settings.getString(Globals.FB_REGISTRATION_ID, "NULL");
+//                String firebaseId=FirebaseInstanceId.getInstance().getToken();
 
                 JSONObject data=new JSONObject();
                 try {

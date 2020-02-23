@@ -19,7 +19,7 @@ public class Globals {
     public static final String BT_UUID = "f05a4570-ad18-44ef-805a-1b6e4ea1e536";
 
     public static final String SENDER_ID = "1019104744841";
-    public static final String CLIENT_ID = "audience:server:client_id:" + "1019104744841-4rrjmv9m6cpp6d050eljqo3m10s1m9aj.apps.googleusercontent.com";
+    public static final String CLIENT_ID = "audience:server:client_id:" + "1019104744841-s8q2330eijmkutv2f24k5lliuf5elqi9.apps.googleusercontent.com";
 //    public static final String CLIENT_ID = "audience:server:client_id:" + "1019104744841-2baahjgjcf6a8nnv05stgtb6jrfrmuac.apps.googleusercontent.com";
 
     public static final String SAVED_STATUS = "SavedStatus";
@@ -33,12 +33,15 @@ public class Globals {
     public static final String FB_REGISTRATION_ID = "FirebaseId";
     public static final String REMOTE_FB_REGISTRATION_ID = "RemoteFirebaseId";
 
-    public static final String FB_GROUP_ID = "GroupId";
+//    public static final String FB_GROUP_ID = "GroupId";
 
-    public static final String P2P_GROUP_ID = "GroupId";
+//    public static final String P2P_GROUP_ID = "GroupId";
+    public static final String P2P_COMMIT_REGISTRATION_ID = "CommitRegistrationId";
+    public static final String P2P_TO = "to";
+    public static final String P2P_TTL = "ttl";
     public static final String P2P_OP = "Operation";
-    public static final String P2P_OP_SET_GROUP_ID = "SetGroupId";
-    public static final String P2P_OP_SET_GROUP_ID_RESULT = "SetGroupIdResult";
+    public static final String P2P_OP_PAIRING_COMMIT = "PairingCommit";
+    public static final String P2P_OP_PAiRING_COMMIT_RESULT = "PairingCommitResult";
     public static final String P2P_OP_TEST = "Test";
     public static final String P2P_OP_SENSOR_ALARM = "SensorAlarm";
     public static final String P2P_OP_GET_LOCATION = "GetLocation";

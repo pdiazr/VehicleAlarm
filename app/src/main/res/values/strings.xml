@@ -64,6 +64,7 @@
 
     <string name="MFMS_successful_pairing">Emparejamiento realizado con éxito</string>
     <string name="MFMS_audio_error">Error de audio en el dispositivo sensor</string>
+    <string name="MFMS_remote_reset">Se ha desvincluado el dispositivo sensor</string>
 
     <string name="Pairing_error">Se ha producido un error al emparejar. Asegúrate de tener disponible una conexión a internet</string>
     <string name="FirebaseId_error">Se ha producido un error al generar ID para el dispositivo</string>

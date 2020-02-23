@@ -9,6 +9,8 @@ import android.content.SharedPreferences;
 import android.os.SystemClock;
 import android.util.Log;
 
+import static es.gpsou.vehiclealarm.Globals.TAG;
+
 
 public class ParkDetectionIntentService extends IntentService {
 
@@ -17,12 +19,12 @@ public class ParkDetectionIntentService extends IntentService {
     public ParkDetectionIntentService() {
         super("ParkDetectionIntentService");
 
-        Log.d(Globals.TAG, "NEW ParkDetectionIntentService service created!!!!!");
+        Log.d(TAG, "NEW ParkDetectionIntentService service created!!!!!");
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Log.d(Globals.TAG, "Stop detection checking");
+        Log.d(TAG, "Stop detection checking");
 
         if (intent != null) {
             LocationSupport ls=LocationSupport.getLocationSupport();
@@ -54,7 +56,7 @@ public class ParkDetectionIntentService extends IntentService {
 
     public static void cancelParkDetection(Context context) {
         AlarmManager alarmMgr=(AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-        if (alarmMgr!= null) {
+        if (alarmMgr!= null && alarmIntent != null) {
             alarmMgr.cancel(alarmIntent);
         }
         alarmIntent=null;
