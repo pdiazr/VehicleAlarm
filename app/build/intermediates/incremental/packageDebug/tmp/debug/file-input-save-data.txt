@@ -1,0 +1,19 @@
+#Internal package file, do not edit.
+#Sat Feb 22 00:11:35 CET 2020
+1.base=C\:\\Users\\Pedro\\AndroidStudioProjects\\VehicleAlarm\\app\\build\\intermediates\\dex\\debug\\mergeDexDebug\\out
+2.path=siren2.gif
+0.baseType=DIRECTORY
+3.baseType=DIRECTORY
+2.base=C\:\\Users\\Pedro\\AndroidStudioProjects\\VehicleAlarm\\app\\build\\intermediates\\merged_assets\\debug\\out
+3.set=ASSET
+2.set=ASSET
+1.baseType=DIRECTORY
+3.path=siren2.gif.sav
+count=4
+1.set=DEX
+0.path=siren.html
+3.base=C\:\\Users\\Pedro\\AndroidStudioProjects\\VehicleAlarm\\app\\build\\intermediates\\merged_assets\\debug\\out
+0.set=ASSET
+0.base=C\:\\Users\\Pedro\\AndroidStudioProjects\\VehicleAlarm\\app\\build\\intermediates\\merged_assets\\debug\\out
+2.baseType=DIRECTORY
+1.path=classes.dex
