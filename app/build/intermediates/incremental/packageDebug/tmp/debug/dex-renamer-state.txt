@@ -1,4 +1,4 @@
-#Tue Feb 25 00:04:08 CET 2020
+#Tue Feb 25 18:54:53 CET 2020
 base.0=C\:\\Users\\Pedro\\AndroidStudioProjects\\VehicleAlarm\\app\\build\\intermediates\\dex\\debug\\mergeDexDebug\\out
 path.0=classes.dex
 renamed.0=classes.dex
