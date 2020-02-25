@@ -18,6 +18,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 public class NfcMonitorActivity extends AppCompatActivity {
 
     ProgressDialog ringProgressDialog=null;
+    NfcAdapter nfcAdapter=null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,13 +41,24 @@ public class NfcMonitorActivity extends AppCompatActivity {
             });
         } else
             fab.setVisibility(View.INVISIBLE);
+
+        nfcAdapter=NfcAdapter.getDefaultAdapter(this);
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        NfcAdapter nfcAdapter=NfcAdapter.getDefaultAdapter(this);
+        if(nfcAdapter==null) {
+            Intent intent = new Intent(this, BtClientActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            startActivity(intent);
+
+            return;
+        }
+
+        nfcAdapter=NfcAdapter.getDefaultAdapter(this);
         if(!nfcAdapter.isEnabled()) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
 

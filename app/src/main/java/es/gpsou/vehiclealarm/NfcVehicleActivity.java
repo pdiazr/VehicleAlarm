@@ -19,7 +19,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -60,16 +59,19 @@ public class NfcVehicleActivity extends AppCompatActivity implements NfcAdapter.
 
         nfcAdapter=NfcAdapter.getDefaultAdapter(this);
 
-        if(nfcAdapter==null) {
-            Intent intent = new Intent(this, BtServerActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-            startActivity(intent);
-        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
+        if(nfcAdapter==null) {
+            Intent intent = new Intent(this, BtServerActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            startActivity(intent);
+
+            return;
+        }
 
         try {
             if(!nfcAdapter.isEnabled()) {
