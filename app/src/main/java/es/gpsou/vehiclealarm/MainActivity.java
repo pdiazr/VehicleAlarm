@@ -1,11 +1,15 @@
 package es.gpsou.vehiclealarm;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -21,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences settings=getSharedPreferences(Globals.CONFIGURACION, 0);
 
 
+        createNotificationChannel(getString(R.string.channel_id_event), getString(R.string.channel_name_event), getString(R.string.channel_description_event));
+        createNotificationChannel(getString(R.string.channel_id_task), getString(R.string.channel_name_tasl), getString(R.string.channel_description_task));
 //        Log.d(Globals.TAG, RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_NOTIFICATION).toString());
 //        Log.d(Globals.TAG, RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM).toString());
 
@@ -55,4 +61,20 @@ public class MainActivity extends AppCompatActivity {
         }
         startActivity(intent);
     }
+
+    private void createNotificationChannel(String CHANNEL_ID, String channel_name, String channel_description) {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = channel_name;
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(channel_description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
 }

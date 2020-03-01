@@ -39,7 +39,7 @@ public class AudioService extends IntentService {
                 PendingIntent pI=PendingIntent.getActivity(this, 1, appIntent, 0);
 
                 NotificationCompat.Builder mBuilder =
-                        new NotificationCompat.Builder(getApplicationContext())
+                        new NotificationCompat.Builder(getApplicationContext(), getString(R.string.channel_id_task))
                                 .setSmallIcon(R.drawable.ic_audio_on)
                                 .setContentTitle("VehicleAlarm")
                                 .setContentText("Canal de audio activo")

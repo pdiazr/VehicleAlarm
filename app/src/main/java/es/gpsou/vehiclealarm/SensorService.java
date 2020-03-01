@@ -103,7 +103,7 @@ public class SensorService extends Service {
 
             PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
             if (wakeLock == null)
-                wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Globals.TAG);
+                wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Globals.TAG + ":wakelock");
 
             if (wakeSoC == null)
                 wakeSoC = new WakeSoC();
@@ -132,7 +132,7 @@ public class SensorService extends Service {
         PendingIntent pI=PendingIntent.getActivity(this, 1, intent, 0);
 
         NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(getApplicationContext())
+                new NotificationCompat.Builder(getApplicationContext(), getString(R.string.channel_id_task))
                         .setSmallIcon(R.drawable.ic_stat_ic_notification    )
                         .setContentTitle("VehicleAlarm")
                         .setContentText("Monitorización activada")

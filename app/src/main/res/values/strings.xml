@@ -5,6 +5,13 @@
     <string name="HCEServiceDesc">VehicleAlarm</string>
     <string name="aiddescription">VehicleAlarm</string>
 
+    <string name="channel_id_event">EVENT</string>
+    <string name="channel_name_event">Eventos</string>
+    <string name="channel_description_event">Avisos de eventos diversos de la aplicación</string>
+    <string name="channel_id_task">TASK</string>
+    <string name="channel_name_tasl">Tareas</string>
+    <string name="channel_description_task">Tareas en ejecución en segundo plano</string>
+
     <string name="title_activity_configure">Configuración</string>
 
     <string name="conf_vehicle_button">For Vehicle</string>

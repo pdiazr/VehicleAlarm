@@ -1546,6 +1546,12 @@ string bt_monitor_dialog_title
 string bt_monitor_pairing_error
 string bt_monitor_pairing_instructions
 string bt_vehicle_pairing_instructions
+string channel_description_event
+string channel_description_task
+string channel_id_event
+string channel_id_task
+string channel_name_event
+string channel_name_tasl
 string character_counter_content_description
 string character_counter_pattern
 string common_google_play_services_enable_button

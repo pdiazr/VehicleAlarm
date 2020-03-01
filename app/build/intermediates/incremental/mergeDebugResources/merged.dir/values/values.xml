@@ -608,6 +608,12 @@
     <string name="bt_monitor_pairing_error">No se ha podido realizar el emparejamiento</string>
     <string name="bt_monitor_pairing_instructions">Activa la opción de emparejamiento por Bluetooth en el dispositivo sensor y selecciónalo cuando aparezca en la lista:.</string>
     <string name="bt_vehicle_pairing_instructions">Activa la opción de emparejamiento por Bluetooth en el disposiivos sensor y selecciona este dispositivo:</string>
+    <string name="channel_description_event">Avisos de eventos diversos de la aplicación</string>
+    <string name="channel_description_task">Tareas en ejecución en segundo plano</string>
+    <string name="channel_id_event">EVENT</string>
+    <string name="channel_id_task">TASK</string>
+    <string name="channel_name_event">Eventos</string>
+    <string name="channel_name_tasl">Tareas</string>
     <string name="character_counter_content_description">Character limit exceeded %1$d of %2$d</string>
     <string name="character_counter_pattern" translatable="false">%1$d / %2$d</string>
     <string msgid="2523291102206661146" name="common_google_play_services_enable_button">Enable</string>

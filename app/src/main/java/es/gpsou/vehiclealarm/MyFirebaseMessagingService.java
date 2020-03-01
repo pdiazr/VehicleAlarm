@@ -569,6 +569,7 @@ import static es.gpsou.vehiclealarm.Globals.TAG;
 
         // Get updated InstanceID token.
         String refreshedToken = s;
+        Log.d(Globals.TAG, "New Firebase Registration ID: "+refreshedToken);
 
         SharedPreferences settings=getSharedPreferences(Globals.CONFIGURACION, 0);
         String mode=settings.getString(Globals.APP_MODE, Globals.NULL);
@@ -696,7 +697,7 @@ import static es.gpsou.vehiclealarm.Globals.TAG;
         }
 
         NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(getApplicationContext())
+                new NotificationCompat.Builder(getApplicationContext(), getString(R.string.channel_id_event))
                         .setSmallIcon(iconId)
                         .setContentTitle(title)
                         .setContentText(content)

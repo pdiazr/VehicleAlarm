@@ -9,27 +9,28 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.BatteryManager;
-import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingEvent;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.functions.FirebaseFunctions;
 
 import org.json.JSONException;
@@ -43,22 +44,17 @@ import static android.content.Context.NOTIFICATION_SERVICE;
  * Created by Pedro on 15/04/2017.
  */
 
-public class LocationSupport implements
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class LocationSupport {
 
     public static long parkDetectionPeriod;
 
     public static final String RESULT_OK = "Ok";
     public static final String PERMISSION_ERROR = "PermissionError";
     public static final String ABSENT_DATA = "AbsentData";
-    public static final String GOOGLE_API_CONNECTION_ERROR = "GoogleApiConnectionError";
 
     private static LocationSupport instance=null;
     private static Context context;
 
-    private static boolean pendingSingleLocation = false;
-    private static boolean parkDetectionRequest = false;
-    private static boolean trackingActive = false;
     private static boolean geofenceActive = false;
 
     private PendingIntent geofenceIntent=null;
@@ -69,7 +65,9 @@ public class LocationSupport implements
     private Location mostRecentLocation=null;
     private Location parkLocation=null;
 
-    private static GoogleApiClient mGoogleApiClient = null;
+    private static FusedLocationProviderClient fusedLocationClient = null;
+    private static GeofencingClient geofencingClient = null;
+
 
     public static LocationSupport getLocationSupport() {
         if (instance==null)
@@ -87,22 +85,109 @@ public class LocationSupport implements
         } catch(NumberFormatException e) {
             parkDetectionPeriod=300;
         }
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
     }
 
     public void opGetLocation(Context c) {
+
         if (context == null)
             init(c);
 
-        pendingSingleLocation = true;
-        startLocation();
+        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            returnLocation(null, Globals.P2P_OP_GET_LOCATION_RESULT, true);
+        } else {
+            fusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            // Got last known location. In some rare situations this can be null.
+                            if (location != null) {
+                                // Logic to handle location object
+                                Location mLastLocation=location;
+
+                                if(mostRecentLocation!=null) {
+                                    if(mLastLocation.getTime() < mostRecentLocation.getTime())
+                                        mLastLocation=mostRecentLocation;
+                                }
+                                mostRecentLocation=mLastLocation;
+
+                                returnLocation(mLastLocation, Globals.P2P_OP_GET_LOCATION_RESULT, false);
+
+                            }
+                        }
+                    });
+        }
     }
 
     public void opActivateTracking(Context c) {
         if (context == null)
             init(c);
 
-        trackingActive = true;
-        startLocation();
+        if (locUpdateIntent != null)
+            return;
+
+        if (savedLocUpdateIntent == null) {
+            Intent intent = new Intent(context, LocationEventsService.class);
+            savedLocUpdateIntent = PendingIntent.getService(context, Globals.LOCATION_UPDATE_INTENT_REQUEST_CODE, intent, PendingIntent.
+                    FLAG_UPDATE_CURRENT);
+        }
+        locUpdateIntent = savedLocUpdateIntent;
+
+        final LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(Globals.LOCATION_UPDATE_INTERVAL);
+        mLocationRequest.setFastestInterval(Globals.LOCATION_UPDATE_INTERVAL);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(mLocationRequest);
+
+        LocationServices.getSettingsClient(context).checkLocationSettings(builder.build())
+                .addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
+                    @Override
+                    public void onComplete(Task<LocationSettingsResponse> task) {
+
+                        try {
+                            LocationSettingsResponse response = task.getResult(ApiException.class);
+                            // All location settings are satisfied. The client can initialize location
+                            // requests here.
+
+                            try {
+                                fusedLocationClient.requestLocationUpdates(
+                                        mLocationRequest, locUpdateIntent);
+
+                                returnLocation(null, Globals.P2P_OP_LOCATION_UPDATE, false);
+                            } catch (SecurityException e) {
+                                cancelLocationUpdates();
+                            }
+                        } catch (ApiException exception) {
+                            switch (exception.getStatusCode()) {
+                                case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                                    try {
+                                        // Cast to a resolvable exception.
+                                        ResolvableApiException resolvable = (ResolvableApiException) exception;
+                                        // Show the dialog by calling startResolutionForResult(),
+                                        // and check the result in onActivityResult().
+                                        PendingIntent pI = resolvable.getResolution();
+                                        context.startActivity(new Intent(context, VehicleActivity.class)
+                                                .putExtra(Globals.RESOLUTION_REQUIRED, pI).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                                        cancelLocationUpdates();
+                                    } catch (ClassCastException e) {
+                                        // Ignore, should be an impossible error.
+                                    }
+                                    break;
+                                case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                                    // Location settings are not satisfied. However, we have no way to fix the
+                                    // settings so we won't show the dialog.
+                                    cancelLocationUpdates();
+                                    break;
+                                default:
+                                    cancelLocationUpdates();
+                            }
+                        }
+
+                    }
+                });
     }
 
     public void opDeactivateTracking(Context c) {
@@ -110,22 +195,14 @@ public class LocationSupport implements
         if (context == null)
             init(c);
 
-        trackingActive = false;
-
-        if(locUpdateIntent==null) {
+        if (locUpdateIntent == null) {
             Intent intent = new Intent(context, LocationEventsService.class);
             savedLocUpdateIntent = PendingIntent.getService(context, Globals.LOCATION_UPDATE_INTENT_REQUEST_CODE, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        } else {
+            fusedLocationClient.removeLocationUpdates(locUpdateIntent);
+            locUpdateIntent = null;
         }
 
-        if(mGoogleApiClient!=null) {
-            if(mGoogleApiClient.isConnected()) {
-                LocationServices.FusedLocationApi.removeLocationUpdates(
-                        mGoogleApiClient, locUpdateIntent);
-                locUpdateIntent=null;
-                if(geofenceIntent==null)
-                    mGoogleApiClient.disconnect();
-            }
-        }
     }
 
     public void opActivateGeofence(Context c) {
@@ -134,7 +211,61 @@ public class LocationSupport implements
 
         geofenceActive=true;
 
-        startLocation();
+        if(geofenceIntent!=null)
+            return;
+
+        final Location mLastLocation=mostRecentLocation;
+
+        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            SharedPreferences settings=context.getSharedPreferences(Globals.CONFIGURACION, 0);
+            float radius=(float)settings.getInt(context.getString(R.string.settings_location_radius), 150);
+
+//            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+//                    mGoogleApiClient);
+
+            Geofence mGeofence=new Geofence.Builder()
+                    .setRequestId(Globals.GEOFENCE_ID)
+                    .setCircularRegion(
+                            mLastLocation.getLatitude(),
+                            mLastLocation.getLongitude(),
+                            radius
+                    )
+                    .setExpirationDuration(Geofence.NEVER_EXPIRE)
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_EXIT)
+                    .build();
+
+            GeofencingRequest mGeofencingRequest=new GeofencingRequest.Builder()
+                    .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_EXIT)
+                    .addGeofence(mGeofence)
+                    .build();
+
+
+            Intent intent = new Intent(context, LocationEventsService.class);
+            geofenceIntent=PendingIntent.getService(context, Globals.GEOFENCE_INTENT_REQUEST_CODE, intent, PendingIntent.
+                    FLAG_UPDATE_CURRENT);
+
+            if(geofencingClient==null)
+                geofencingClient = LocationServices.getGeofencingClient(context);
+
+
+            geofencingClient.addGeofences(
+                    mGeofencingRequest,
+                    geofenceIntent
+            ).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                        Log.d(Globals.TAG, "Geofence activada");
+                        ShowNotification(mLastLocation);
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.d(Globals.TAG, "ERROR al activar geofence");
+                    cancelGeofence();
+                }
+            });
+
+        }
     }
 
     public void opDeactivateGeofence(Context c) {
@@ -142,34 +273,33 @@ public class LocationSupport implements
             init(c);
         geofenceActive = false;
 
-        ArrayList<String> requestIds=new ArrayList<>(1);
+        if (geofencingClient == null)
+            return;
+
+        ArrayList<String> requestIds = new ArrayList<>(1);
         requestIds.add(Globals.GEOFENCE_ID);
 
-        if(mGoogleApiClient!=null) {
-            if(mGoogleApiClient.isConnected()) {
-                LocationServices.GeofencingApi.removeGeofences(
-                        mGoogleApiClient,
-                        requestIds
-                ).setResultCallback(new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(@NonNull Status status) {
-                        if(status.isSuccess()) {
-                            Log.d(Globals.TAG, "Geofence desactivada");
-                            CancelNotification();
 
-                            if(geofenceIntent!=null)
-                                geofenceIntent.cancel();
-                            geofenceIntent=null;
-                            if(locUpdateIntent==null)
-                                mGoogleApiClient.disconnect();
-                        } else {
-                            Log.d(Globals.TAG, "ERROR al desactivar geofence");
-                        }
-                    }
-                }); // Result processed in onResult().
+        geofencingClient.removeGeofences(
+                requestIds
+        ).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d(Globals.TAG, "Geofence desactivada");
+                CancelNotification();
 
+                if (geofenceIntent != null)
+                    geofenceIntent.cancel();
+                geofenceIntent = null;
             }
-        }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(Globals.TAG, "ERROR al desactivar geofence");
+            }
+        }); // Result processed in onResult().
+
+
     }
 
     public void locationUpdated(Context c, Location location) {
@@ -242,62 +372,36 @@ public class LocationSupport implements
     }
 
     public void parkDetectionCheck(Context c) {
-        if(context==null)
+        if (context == null)
             init(c);
 
-        pendingSingleLocation=true;
-        parkDetectionRequest =true;
-        startLocation();
+        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+            return;
+
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            // Logic to handle location object
+                            Location mLastLocation = location;
+
+                            if (mostRecentLocation != null) {
+                                if (mLastLocation.getTime() < mostRecentLocation.getTime())
+                                    mLastLocation = mostRecentLocation;
+                            }
+                            mostRecentLocation = mLastLocation;
+
+                            parkDetection(mLastLocation);
+
+                        }
+                    }
+                });
     }
 
-    private void startLocation() {
-        if (mGoogleApiClient == null) {
-            mGoogleApiClient = new GoogleApiClient.Builder(context)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .build();
-            mGoogleApiClient.connect();
-        } else if (mGoogleApiClient.isConnected()) {
-            if (pendingSingleLocation)
-                returnSingleLocation();
-            if(trackingActive)
-                startLocationUpdates();
-            if(geofenceActive)
-                buildGeofence();
-        } else if (!mGoogleApiClient.isConnecting()) {
-            mGoogleApiClient.connect();
-        }
-    }
-
-    private void returnSingleLocation() {
-        Location mLastLocation = null;
-        boolean permissionFailed = false;
-
-        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            permissionFailed=true;
-        } else {
-            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                    mGoogleApiClient);
-        }
-
-        if(mostRecentLocation!=null) {
-            if(mLastLocation.getTime() < mostRecentLocation.getTime())
-                mLastLocation=mostRecentLocation;
-        }
-        mostRecentLocation=mLastLocation;
-
-        pendingSingleLocation=false;
-
-        if(parkDetectionRequest)
-            parkDetection(mLastLocation);
-        else
-            returnLocation(mLastLocation, Globals.P2P_OP_GET_LOCATION_RESULT, permissionFailed);
-
-    }
 
     private void parkDetection(Location loc) {
-        parkDetectionRequest=false;
 
         if(loc!=null) {
             if(prevLocation!=null) {
@@ -347,7 +451,6 @@ public class LocationSupport implements
             if(permissionFailled) {
                 /*            mRemoteMessage.addData(Globals.P2P_RESULT, PERMISSION_ERROR); */
                 data.put(Globals.P2P_RESULT, PERMISSION_ERROR);
-                trackingActive=false;
             } else if (location != null || prevLocation != null) {
                 if(location==null)
                     location=prevLocation;
@@ -387,60 +490,6 @@ public class LocationSupport implements
         mFunctions.getHttpsCallable("sendMessage").call(data);
     }
 
-    private void buildGeofence() {
-        if(geofenceIntent!=null)
-            return;
-
-        final Location mLastLocation=mostRecentLocation;
-
-        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            SharedPreferences settings=context.getSharedPreferences(Globals.CONFIGURACION, 0);
-            float radius=(float)settings.getInt(context.getString(R.string.settings_location_radius), 150);
-
-//            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-//                    mGoogleApiClient);
-
-            Geofence mGeofence=new Geofence.Builder()
-                    .setRequestId(Globals.GEOFENCE_ID)
-                    .setCircularRegion(
-                            mLastLocation.getLatitude(),
-                            mLastLocation.getLongitude(),
-                            radius
-                    )
-                    .setExpirationDuration(Geofence.NEVER_EXPIRE)
-                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_EXIT)
-                    .build();
-
-            GeofencingRequest mGeofencingRequest=new GeofencingRequest.Builder()
-                    .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_EXIT)
-                    .addGeofence(mGeofence)
-                    .build();
-
-
-            Intent intent = new Intent(context, LocationEventsService.class);
-            geofenceIntent=PendingIntent.getService(context, Globals.GEOFENCE_INTENT_REQUEST_CODE, intent, PendingIntent.
-                    FLAG_UPDATE_CURRENT);
-
-            LocationServices.GeofencingApi.addGeofences(
-                    mGoogleApiClient,
-                    mGeofencingRequest,
-                    geofenceIntent
-            ).setResultCallback(new ResultCallback<Status>() {
-                @Override
-                public void onResult(@NonNull Status status) {
-                    if(status.isSuccess()) {
-                        Log.d(Globals.TAG, "Geofence activada");
-                        ShowNotification(mLastLocation);
-                    } else {
-                        Log.d(Globals.TAG, "ERROR al activar geofence");
-                        cancelGeofence();
-                    }
-                }
-            });
-
-        }
-    }
-
     static void CancelNotification() {
         int mNotificationId = 001;
 
@@ -451,7 +500,7 @@ public class LocationSupport implements
 
     static void ShowNotification(Location loc) {
         NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(context)
+                new NotificationCompat.Builder(context, context.getString(R.string.channel_id_event))
                         .setSmallIcon(R.drawable.ic_stat_ic_notification)
                         .setContentTitle("Geofence")
                         .setContentText("Geofence activa");
@@ -482,93 +531,14 @@ public class LocationSupport implements
             geofenceIntent.cancel();
         geofenceIntent=null;
 
-        if(locUpdateIntent==null)
-            mGoogleApiClient.disconnect();
     }
 
-    private void startLocationUpdates() {
-        if(locUpdateIntent!=null)
-            return;
-
-        if(savedLocUpdateIntent==null) {
-            Intent intent = new Intent(context, LocationEventsService.class);
-            savedLocUpdateIntent = PendingIntent.getService(context, Globals.LOCATION_UPDATE_INTENT_REQUEST_CODE, intent, PendingIntent.
-                    FLAG_UPDATE_CURRENT);
-        }
-        locUpdateIntent=savedLocUpdateIntent;
-
-        final LocationRequest mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(Globals.LOCATION_UPDATE_INTERVAL);
-        mLocationRequest.setFastestInterval(Globals.LOCATION_UPDATE_INTERVAL);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                .addLocationRequest(mLocationRequest);
-
-        PendingResult<LocationSettingsResult> result =
-                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient,
-                        builder.build());
-
-        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
-            @Override
-            public void onResult(LocationSettingsResult result) {
-                final Status status = result.getStatus();
-                switch (status.getStatusCode()) {
-                    case LocationSettingsStatusCodes.SUCCESS:
-                        try {
-                            LocationServices.FusedLocationApi.requestLocationUpdates(
-                                    mGoogleApiClient, mLocationRequest, locUpdateIntent);
-
-                            returnLocation(null, Globals.P2P_OP_LOCATION_UPDATE, false);
-                        } catch (SecurityException e) {
-                            cancelLocationUpdates();
-                        }
-                        break;
-                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                        PendingIntent pI = status.getResolution();
-                        mGoogleApiClient.getContext().startActivity(new Intent(mGoogleApiClient.getContext(), VehicleActivity.class)
-                                .putExtra(Globals.RESOLUTION_REQUIRED, pI).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-                        cancelLocationUpdates();
-                        break;
-                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                        // Location settings are not satisfied. However, we have no way
-                        // to fix the settings so we won't show the dialog.
-                        cancelLocationUpdates();
-
-                        break;
-                    default:
-                        cancelLocationUpdates();
-                }
-            }
-        });
-    }
 
     private void cancelLocationUpdates() {
-        trackingActive=false;
         locUpdateIntent=null;
         returnLocation(null, Globals.P2P_OP_LOCATION_UPDATE, true);
-        if(geofenceIntent==null)
-            mGoogleApiClient.disconnect();
     }
 
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        Log.d(Globals.TAG, "OnConnected triggered");
-
-        if(pendingSingleLocation)
-            returnSingleLocation();
-
-        if(trackingActive) {
-            startLocationUpdates();
-            return;
-        }
-        if(geofenceActive) {
-            buildGeofence();
-            return;
-        }
-        mGoogleApiClient.disconnect();
-
-    }
 
     public int getBatteryLevel() {
         IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
@@ -589,46 +559,6 @@ public class LocationSupport implements
             return radius;
         } else
             return 0;
-    }
-
-//    @Override
-//    public void onLocationChanged(Location location) {
-//        returnLocation(location, true, false);
-//    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        Log.d(Globals.TAG, "OnConnectionSuspended triggered");
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.d(Globals.TAG, "OnConnectionFailed triggered");
-/*        FirebaseMessaging fm = FirebaseMessaging.getInstance(); */
-        FirebaseFunctions mFunctions = FirebaseFunctions.getInstance("europe-west1");
-        SharedPreferences settings=context.getSharedPreferences(Globals.CONFIGURACION, 0);
-        String to=settings.getString(Globals.REMOTE_FB_REGISTRATION_ID, null);
-
-/*        String id = Integer.toString(Globals.msgId.incrementAndGet());
-        fm.send(new RemoteMessage.Builder(to)
-                .setMessageId(id)
-                .addData(Globals.P2P_DEST, Globals.P2P_DEST_MONITOR)
-                .addData(Globals.P2P_OP, Globals.P2P_OP_GET_LOCATION_RESULT)
-                .addData(Globals.P2P_RESULT, GOOGLE_API_CONNECTION_ERROR)
-                .setTtl(3600)
-                .build());
-*/
-        JSONObject data=new JSONObject();
-        try {
-            data.put(Globals.P2P_TO, to);
-            data.put(Globals.P2P_TTL, "3600");
-            data.put(Globals.P2P_DEST, Globals.P2P_DEST_MONITOR);
-            data.put(Globals.P2P_OP, Globals.P2P_OP_GET_LOCATION_RESULT);
-            data.put(Globals.P2P_RESULT, GOOGLE_API_CONNECTION_ERROR);
-        } catch (JSONException e) {
-            return;
-        }
-        mFunctions.getHttpsCallable("sendMessage").call(data);
     }
 
 }
